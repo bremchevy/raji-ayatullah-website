@@ -8,7 +8,7 @@
   var current = "gateway";
 
   function showView(name, focus) {
-    if (!views[name]) name = "gateway";
+    if (!Object.hasOwn(views, name)) name = "gateway";
     Object.keys(views).forEach(function (k) {
       views[k].hidden = k !== name;
     });
@@ -51,7 +51,7 @@
     }
     var target = document.getElementById(id);
     var v = target && target.closest('[id^="view-"]');
-    var name = views[id] ? id : v ? v.id.slice(5) : "gateway";
+    var name = Object.hasOwn(views, id) ? id : v ? v.id.slice(5) : "gateway";
     showView(name, false);
     if (target)
       requestAnimationFrame(function () {
