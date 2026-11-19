@@ -161,6 +161,18 @@
         if (link === active) link.setAttribute("aria-current", "location");
         else link.removeAttribute("aria-current");
       });
+      // Keep the current section visible in narrow, horizontally scrolling tabs.
+      if (active && item.nav.scrollWidth > item.nav.clientWidth) {
+        var navBounds = item.nav.getBoundingClientRect();
+        var activeBounds = active.getBoundingClientRect();
+        var shift =
+          activeBounds.left < navBounds.left + 8
+            ? activeBounds.left - navBounds.left - 8
+            : activeBounds.right > navBounds.right - 8
+              ? activeBounds.right - navBounds.right + 8
+              : 0;
+        if (shift) item.nav.scrollBy({ left: shift, behavior: "instant" });
+      }
       item.progress.style.transform =
         "scaleX(" +
         (total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0) +
