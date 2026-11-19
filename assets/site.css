@@ -561,9 +561,15 @@ kbd {
 #view-developer a {
   color: var(--link);
 }
-#view-developer .perspectives a { color: var(--muted); }
-#view-developer .perspectives a:hover { color: var(--green); }
-#view-developer .perspectives a[aria-current] { color: var(--paper); }
+#view-developer .perspectives a {
+  color: var(--muted);
+}
+#view-developer .perspectives a:hover {
+  color: var(--green);
+}
+#view-developer .perspectives a[aria-current] {
+  color: var(--paper);
+}
 .gh-sticky {
   position: sticky;
   top: 0;
@@ -791,6 +797,9 @@ kbd {
 .gh-container > aside {
   min-width: 0;
 }
+.gh-container > section {
+  min-width: 0;
+}
 .gh-avatar {
   position: relative;
   display: flex;
@@ -893,7 +902,7 @@ kbd {
   padding: 22px 0;
   border-top: 1px solid var(--border);
 }
-.side-block h3 {
+.side-block h2 {
   font: 10px var(--mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1443,7 +1452,7 @@ kbd {
   padding: 18px 0;
   border-bottom: 1px solid var(--border);
 }
-.skill-group h4 {
+.skill-group h3 {
   color: var(--text2);
   font-size: 12px;
   margin-bottom: 12px;
@@ -1670,7 +1679,7 @@ kbd {
 }
 .eval-rnum {
   font: 11px var(--mono);
-  color: #75876c;
+  color: #53654b;
   padding-top: 3px;
 }
 .eval-rrow h3 {
@@ -2051,7 +2060,7 @@ kbd {
 }
 .cover-8 {
   background: #c6714d;
-  color: #fcf0db;
+  color: #2b1b13;
 }
 .cover-8 strong {
   font-size: 60px;
@@ -2133,7 +2142,7 @@ kbd {
 }
 .service .n {
   font: 10px var(--mono);
-  color: #6e8260;
+  color: #526647;
 }
 .service h3 {
   font-size: 17px;
@@ -3554,5 +3563,7 @@ kbd {
     --border: #aaa;
     --border-muted: #aaa;
   }
-  #view-developer .btn { display: none; }
+  #view-developer .btn {
+    display: none;
+  }
 }
