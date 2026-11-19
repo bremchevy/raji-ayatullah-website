@@ -1367,12 +1367,15 @@
         var el = e.g ? document.getElementById(e.g) : null;
         if (el) {
           revealDestination(el);
+          syncSections();
+          if (!el.hasAttribute("tabindex")) el.tabIndex = -1;
+          el.focus({ preventScroll: true });
           el.scrollIntoView({
             behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
               .matches
               ? "auto"
               : "smooth",
-            block: "center",
+            block: "start",
           });
           ghFlash(el);
         }
