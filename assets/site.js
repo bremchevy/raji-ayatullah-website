@@ -1167,7 +1167,13 @@
         }
         var el = e.g ? document.getElementById(e.g) : null;
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.scrollIntoView({
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "auto"
+              : "smooth",
+            block: "center",
+          });
           ghFlash(el);
         }
         ghInput.blur();
