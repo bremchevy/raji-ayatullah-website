@@ -1553,6 +1553,152 @@
   }
   tick();
   setInterval(tick, 60000);
+
+  /* A paper study, not a second navigation system. All motion is finite and
+     input-led; a still, foldable illustration replaces flight for reduced motion. */
+  (function initPaperBird() {
+    var stage = document.getElementById("paperBird");
+    if (!stage) return;
+    var intro = stage.closest(".gw-intro"),
+      action = stage.querySelector("[data-bird-action]"),
+      reduced = window.matchMedia("(prefers-reduced-motion: reduce)"),
+      finePointer = window.matchMedia("(hover: hover) and (pointer: fine)"),
+      frame = 0,
+      restTimer = 0,
+      flightTimer = 0,
+      visible = true,
+      pointerX = 0,
+      pointerY = 0;
+
+    function updatePrompt() {
+      var open = stage.classList.contains("is-open");
+      action.textContent = reduced.matches ? "Spread wings" : "Let it fly";
+      stage.setAttribute(
+        "aria-label",
+        reduced.matches
+          ? "Spread wings — paper bird"
+          : "Let it fly — paper bird",
+      );
+      if (reduced.matches) stage.setAttribute("aria-pressed", String(open));
+      else stage.removeAttribute("aria-pressed");
+    }
+
+    function reset() {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      clearTimeout(restTimer);
+      clearTimeout(flightTimer);
+      stage.classList.remove("is-curious", "is-flying", "is-open");
+      ["--bird-x", "--bird-y", "--bird-lean", "--bird-wing"].forEach(
+        function (key) {
+          stage.style.removeProperty(key);
+        },
+      );
+      updatePrompt();
+    }
+
+    function canMove() {
+      return !reduced.matches && !document.hidden && visible;
+    }
+
+    function settleAttention() {
+      if (
+        !stage.classList.contains("is-flying") &&
+        !stage.classList.contains("is-open")
+      )
+        reset();
+    }
+
+    function curious() {
+      if (!canMove() || stage.classList.contains("is-flying")) return;
+      stage.classList.add("is-curious");
+      clearTimeout(restTimer);
+      restTimer = setTimeout(reset, 5000);
+    }
+
+    function followPointer(event) {
+      if (!canMove() || !finePointer.matches || event.pointerType === "touch")
+        return;
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      if (frame || stage.classList.contains("is-flying")) return;
+      frame = requestAnimationFrame(function () {
+        frame = 0;
+        if (!canMove()) return;
+        var rect = stage.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var x = Math.max(
+            -1,
+            Math.min(
+              1,
+              (pointerX - rect.left - rect.width / 2) / (rect.width / 2),
+            ),
+          ),
+          y = Math.max(
+            -1,
+            Math.min(
+              1,
+              (pointerY - rect.top - rect.height / 2) / (rect.height / 2),
+            ),
+          );
+        stage.style.setProperty("--bird-x", (x * 7).toFixed(2) + "px");
+        stage.style.setProperty("--bird-y", (y * 3).toFixed(2) + "px");
+        stage.style.setProperty("--bird-lean", (x * 4).toFixed(2) + "deg");
+        stage.style.setProperty("--bird-wing", (y * 4).toFixed(2) + "deg");
+        curious();
+      });
+    }
+
+    intro.addEventListener("pointermove", followPointer, { passive: true });
+    intro.addEventListener("pointerleave", settleAttention);
+    intro.addEventListener("focusin", curious);
+    intro.addEventListener("focusout", function (event) {
+      if (!intro.contains(event.relatedTarget)) settleAttention();
+    });
+    document.querySelectorAll(".gw-row").forEach(function (link) {
+      link.addEventListener("pointerenter", function (event) {
+        if (finePointer.matches && event.pointerType !== "touch") curious();
+      });
+      link.addEventListener("pointerleave", settleAttention);
+      link.addEventListener("focus", curious);
+      link.addEventListener("blur", settleAttention);
+    });
+
+    stage.addEventListener("click", function () {
+      if (document.hidden) return;
+      if (reduced.matches) {
+        stage.classList.toggle("is-open");
+        updatePrompt();
+        return;
+      }
+      if (stage.classList.contains("is-flying")) return;
+      reset();
+      stage.classList.add("is-flying");
+      // Also settle if a browser suppresses animationend during a route change.
+      flightTimer = setTimeout(reset, 1550);
+    });
+    stage.addEventListener("animationend", function (event) {
+      if (event.animationName === "paper-flight") reset();
+    });
+    reduced.addEventListener("change", reset);
+    finePointer.addEventListener("change", reset);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) reset();
+    });
+    window.addEventListener("pagehide", reset);
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(
+        function (entries) {
+          visible = entries[0].isIntersecting;
+          if (!visible) reset();
+        },
+        { threshold: 0.05 },
+      ).observe(stage);
+    }
+    updatePrompt();
+    stage.disabled = false;
+  })();
+
   document.addEventListener("keydown", function (e) {
     if (
       current !== "gateway" ||
