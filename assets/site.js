@@ -15,7 +15,7 @@
     current = name;
     document.body.setAttribute("data-view", name);
     var skip = document.querySelector(".skip-link");
-    skip.href = "#view-" + name;
+    skip.href = {gateway: '#gateway-content', developer: '#overview', evaluator: '#eval-main', freelance: '#free-main'}[name];
     document.title =
       "Raji Ayatullah — " +
       {
