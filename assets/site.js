@@ -214,9 +214,7 @@
       ];
       cards.forEach(function (card) {
         card.dataset.workKind =
-          realProjects.includes(card.id) ||
-          card.id.startsWith("free-proj-") ||
-          card.querySelector(".cover-1")
+          realProjects.includes(card.id) || card.id.startsWith("free-proj-")
             ? "project"
             : "capability";
       });
@@ -661,6 +659,22 @@
     book: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z"/></svg>',
   };
   var SEARCH_INDEX = [
+    {
+      t: "Spacel — project study",
+      s: "Case study · Development across iOS, Android and web",
+      k: "case study spacel product development main core developer three 3 platforms mobile ios android website role scope",
+      v: "developer",
+      g: "case-spacel",
+      c: "book",
+    },
+    {
+      t: "AI evaluation — practice study",
+      s: "Case study · Thousands of responses, five platforms, eight criteria",
+      k: "case study ai evaluation outlier scale appen oneforma test io thousands responses rubric ranking comparison justification experience",
+      v: "evaluator",
+      g: "case-ai-evaluation",
+      c: "book",
+    },
     {
       t: "Overview — profile",
       s: "Section · Developer view",
