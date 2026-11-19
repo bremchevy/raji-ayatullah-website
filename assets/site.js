@@ -660,6 +660,14 @@
   };
   var SEARCH_INDEX = [
     {
+      t: "Public evidence — live projects, code & criteria",
+      s: "Freelance · Five live projects, four public repositories, eight criteria",
+      k: "proof evidence public verifiable testimonials reviews live projects source code github repositories criteria framework",
+      v: "freelance",
+      g: "free-proof",
+      c: "book",
+    },
+    {
       t: "Spacel — project study",
       s: "Case study · Development across iOS, Android and web",
       k: "case study spacel product development main core developer three 3 platforms mobile ios android website role scope",
