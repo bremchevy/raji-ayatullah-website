@@ -99,6 +99,12 @@ html {
   }
 }
 @media (max-width: 480px) {
+  .case-study h2 {
+    text-wrap: balance;
+  }
+  .case-study h2 br {
+    display: none;
+  }
   .case-metrics {
     grid-template-columns: 1fr;
     gap: 20px;
