@@ -561,6 +561,9 @@ kbd {
 #view-developer a {
   color: var(--link);
 }
+#view-developer .perspectives a { color: var(--muted); }
+#view-developer .perspectives a:hover { color: var(--green); }
+#view-developer .perspectives a[aria-current] { color: var(--paper); }
 .gh-sticky {
   position: sticky;
   top: 0;
