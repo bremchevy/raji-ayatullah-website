@@ -39,7 +39,10 @@
       "",
       name === "gateway" ? location.pathname + location.search : "#" + name,
     );
-    window.scrollTo({ top: 0, behavior: "instant" });
+    // Let the hidden/sticky view layout settle before resetting its scroll anchor.
+    requestAnimationFrame(function () {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
   }
   document.querySelectorAll("[data-go]").forEach(function (b) {
     b.addEventListener("click", function (e) {
