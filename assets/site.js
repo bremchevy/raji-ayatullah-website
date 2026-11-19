@@ -141,18 +141,26 @@
     if (!sectionNavs) return;
     sectionNavs.forEach(function (item) {
       if (item.view.hidden) return;
-      var line = item.header.getBoundingClientRect().height + 60;
+      var offset = Math.ceil(item.header.getBoundingClientRect().height) + 24;
+      document.documentElement.style.setProperty(
+        "--section-offset",
+        offset + "px",
+      );
+      var line = offset + 16;
+      var total = document.documentElement.scrollHeight - window.innerHeight;
       var active = null;
       item.links.forEach(function (link) {
         var target = document.getElementById(link.hash.slice(1));
         if (target && target.getBoundingClientRect().top <= line) active = link;
       });
+      // Short final sections cannot always reach the sticky-header reading line.
+      if (total > 0 && window.scrollY >= total - 2)
+        active = item.links[item.links.length - 1];
       item.links.forEach(function (link) {
         link.classList.toggle("active", link === active);
         if (link === active) link.setAttribute("aria-current", "location");
         else link.removeAttribute("aria-current");
       });
-      var total = document.documentElement.scrollHeight - window.innerHeight;
       item.progress.style.transform =
         "scaleX(" +
         (total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0) +
@@ -171,6 +179,12 @@
   window.addEventListener("scroll", queueSectionSync, { passive: true });
   window.addEventListener("resize", queueSectionSync);
   document.addEventListener("toggle", queueSectionSync, true);
+  if ("ResizeObserver" in window) {
+    var headerObserver = new ResizeObserver(queueSectionSync);
+    sectionNavs.forEach(function (item) {
+      headerObserver.observe(item.header);
+    });
+  }
   syncSections();
 
   /* Real projects and capabilities remain distinct, without leaving the page. */

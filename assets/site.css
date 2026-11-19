@@ -17,7 +17,7 @@
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 180px;
+  scroll-padding-top: var(--section-offset, 24px);
 }
 body {
   margin: 0;
@@ -2307,9 +2307,6 @@ kbd {
   }
 }
 @media (max-width: 800px) {
-  html {
-    scroll-padding-top: 205px;
-  }
   .gw-wrap {
     padding: 0 28px;
   }
@@ -2640,9 +2637,6 @@ kbd {
   }
 }
 @media (max-width: 560px) {
-  html {
-    scroll-padding-top: 205px;
-  }
   .gw-wrap {
     padding: 0 22px;
   }
