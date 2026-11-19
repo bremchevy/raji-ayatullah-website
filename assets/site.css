@@ -565,27 +565,165 @@ b {
   border-bottom: 1px solid #bec8b8;
   padding-bottom: 16px;
 }
-.art-monogram {
-  font: 400 clamp(130px, 16vw, 220px) / 1 var(--serif);
-  letter-spacing: -0.15em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.paper-scene {
+  min-height: 390px;
+}
+.bird-stage {
   position: relative;
+  display: flex;
   flex: 1;
-  padding-right: 20px;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 240px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--green);
+  touch-action: manipulation;
 }
-.art-monogram > span {
-  font-style: italic;
-  color: #82957a;
-  margin-left: -12px;
+.bird-stage:disabled {
+  opacity: 1;
+  cursor: default;
 }
-.art-monogram > i {
-  font: normal 38px var(--sans);
-  position: absolute;
-  right: 0;
-  top: 23px;
-  letter-spacing: 0;
+.bird-stage:focus-visible {
+  outline-offset: -3px;
+}
+.bird-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.bird-pencil {
+  opacity: 0.28;
+}
+.bird-invitation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 17px;
+  text-align: left;
+  color: #385144;
+}
+.bird-invitation > span {
+  font: italic 17px/1.4 var(--serif);
+}
+.bird-invitation b {
+  font: 10px/1.5 var(--mono);
+  white-space: nowrap;
+  border-bottom: 1px solid #9aa990;
+  padding: 5px 0;
+}
+.bird-stage:disabled .bird-invitation b {
+  display: none;
+}
+.bird-stage:hover .bird-invitation b,
+.bird-stage:focus-visible .bird-invitation b {
+  border-color: currentColor;
+}
+.paper-bird,
+.bird-wing-front,
+.bird-wing-back,
+.bird-shadow {
+  transform-box: view-box;
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.paper-bird {
+  transform-origin: 202px 180px;
+  transform: translate(var(--bird-x, 0px), var(--bird-y, 0px))
+    rotate(var(--bird-lean, 0deg));
+}
+.bird-wing-front {
+  transform-origin: 195px 179px;
+}
+.bird-wing-back {
+  transform-origin: 224px 160px;
+}
+.bird-shadow {
+  transform-origin: 202px 219px;
+}
+.bird-stage.is-curious .bird-wing-front {
+  transform: rotate(calc(-9deg + var(--bird-wing, 0deg)));
+}
+.bird-stage.is-curious .bird-wing-back {
+  transform: rotate(7deg);
+}
+.bird-stage.is-open .bird-wing-front {
+  transform: rotate(-28deg);
+}
+.bird-stage.is-open .bird-wing-back {
+  transform: rotate(17deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bird-stage.is-flying .paper-bird {
+    animation: paper-flight 1400ms cubic-bezier(0.45, 0, 0.2, 1) both;
+  }
+  .bird-stage.is-flying .bird-wing-front {
+    animation: paper-wing 1400ms ease-in-out both;
+  }
+  .bird-stage.is-flying .bird-wing-back {
+    animation: paper-wing-back 1400ms ease-in-out both;
+  }
+  .bird-stage.is-flying .bird-shadow {
+    animation: paper-shadow 1400ms ease-in-out both;
+  }
+}
+@keyframes paper-flight {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+  24% {
+    transform: translate(-7px, -19px) rotate(-7deg);
+  }
+  50% {
+    transform: translate(18px, -45px) rotate(5deg);
+  }
+  78% {
+    transform: translate(8px, -12px) rotate(-3deg);
+  }
+}
+@keyframes paper-wing {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20%,
+  57% {
+    transform: rotate(-34deg);
+  }
+  38%,
+  76% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes paper-wing-back {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20%,
+  57% {
+    transform: rotate(20deg);
+  }
+  38%,
+  76% {
+    transform: rotate(-9deg);
+  }
+}
+@keyframes paper-shadow {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scaleX(0.65);
+    opacity: 0.04;
+  }
 }
 .art-bottom {
   border-top: 1px solid #bec8b8;
@@ -2527,11 +2665,22 @@ kbd {
   .art-bottom {
     font-size: 7px;
   }
-  .art-monogram {
-    font-size: 140px;
+  .paper-scene {
+    min-height: 310px;
   }
-  .art-monogram > i {
-    font-size: 24px;
+  .bird-stage {
+    min-height: 190px;
+  }
+  .bird-invitation > span {
+    font-size: 14px;
+  }
+  .bird-invitation {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .bird-invitation b {
+    font-size: 9px;
   }
   .gw-row-main b {
     font-size: 21px;
@@ -2863,6 +3012,33 @@ kbd {
   }
   .identity-art {
     display: none;
+  }
+  .identity-art.paper-scene {
+    display: flex;
+    min-height: 0;
+    height: 178px;
+    padding: 12px 16px;
+  }
+  .paper-scene .art-top,
+  .paper-scene .art-bottom {
+    display: none;
+  }
+  .bird-stage {
+    min-height: 0;
+  }
+  .bird-stage svg {
+    position: absolute;
+    width: 210px;
+    height: 147px;
+    left: calc(50% - 105px);
+    top: -4px;
+  }
+  .bird-invitation {
+    position: absolute;
+    inset: auto 0 0;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
   }
   .gw-section-label {
     margin: 38px 0 0;
@@ -3626,6 +3802,16 @@ kbd {
   }
 }
 @media print {
+  .paper-bird,
+  .bird-wing-front,
+  .bird-wing-back,
+  .bird-shadow {
+    animation: none !important;
+    transform: none !important;
+  }
+  .bird-invitation b {
+    display: none;
+  }
   .perspectives,
   .gh-sticky,
   .eval-header,
