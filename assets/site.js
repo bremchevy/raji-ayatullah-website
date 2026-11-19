@@ -1588,7 +1588,8 @@
       frame = 0;
       clearTimeout(restTimer);
       clearTimeout(flightTimer);
-      stage.classList.remove("is-curious", "is-flying", "is-open");
+      // Clearing transient motion must not undo a deliberate static wing toggle.
+      stage.classList.remove("is-curious", "is-flying");
       ["--bird-x", "--bird-y", "--bird-lean", "--bird-wing"].forEach(
         function (key) {
           stage.style.removeProperty(key);
@@ -1680,7 +1681,10 @@
     stage.addEventListener("animationend", function (event) {
       if (event.animationName === "paper-flight") reset();
     });
-    reduced.addEventListener("change", reset);
+    reduced.addEventListener("change", function () {
+      stage.classList.remove("is-open");
+      reset();
+    });
     finePointer.addEventListener("change", reset);
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) reset();
