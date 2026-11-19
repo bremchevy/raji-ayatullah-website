@@ -126,7 +126,7 @@
             </aside>
           </div>
           <div class="gw-section-label">
-            <span>One profile. Three perspectives.</span
+            <span>What would you like to explore?</span
             ><span class="gw-hint"
               >Quick keys <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span
             >
@@ -135,7 +135,7 @@
             <a class="gw-row" data-go="developer" href="#developer"
               ><span class="gw-num">01 / BUILD</span
               ><span class="gw-row-main"
-                ><b>Developer</b
+                ><b>Explore the builds</b
                 ><span
                   >Selected projects, technical skills and the work behind
                   them.</span
@@ -145,7 +145,7 @@
             <a class="gw-row" data-go="evaluator" href="#evaluator"
               ><span class="gw-num">02 / EVALUATE</span
               ><span class="gw-row-main"
-                ><b>AI Evaluator</b
+                ><b>Inside the evaluation</b
                 ><span
                   >The rubric, the method and the professional record.</span
                 ></span
@@ -154,7 +154,7 @@
             <a class="gw-row" data-go="freelance" href="#freelance"
               ><span class="gw-num">03 / COLLABORATE</span
               ><span class="gw-row-main"
-                ><b>Freelance</b
+                ><b>Work with me</b
                 ><span
                   >What I can build for you and how we can work together.</span
                 ></span
@@ -270,11 +270,12 @@
         <div class="gh-tabsbar">
           <div class="gh-tabsbar-in">
             <nav aria-label="Profile sections" class="gh-tabs">
-              <a class="gh-tab active" href="#overview">Overview</a>
+              <a class="gh-tab active" href="#overview">Profile</a>
               <a class="gh-tab" href="#projects">Work</a>
-              <a class="gh-tab" href="#rubric">Rubric</a>
+              <a class="gh-tab" href="#rubric">Approach</a>
+              <a class="gh-tab" href="#experience">Experience</a>
               <a class="gh-tab" href="#skills">Skills</a>
-              <a class="gh-tab" href="#education">Education</a>
+              <a class="gh-tab" href="#developer-contact">Contact</a>
             </nav>
           </div>
         </div>
@@ -388,6 +389,12 @@
                 OneForma and Test IO. A First Class Computer Science degree and
                 900+ hours of independent AI study underpin both disciplines.
               </p>
+              <div class="section-actions">
+                <a class="journey-link" href="#projects"
+                  >Explore my work <span aria-hidden="true">↗</span></a
+                >
+                <a href="#rubric">How I approach quality ↓</a>
+              </div>
               <div class="loop">
                 <div class="step">
                   <code>01 · BUILD</code><b>Ship the product</b
@@ -412,9 +419,31 @@
             </div>
           </div>
           <h2 class="gh-pinned-head" id="projects">
-            Selected work &amp; capabilities
+            The work. And what I bring to it.
           </h2>
-          <div class="grid2">
+          <div class="work-explorer" data-work-controls="developer-work" hidden>
+            <div role="group" aria-label="Filter developer work">
+              <button type="button" data-work-filter="all" aria-pressed="true">
+                All work
+              </button>
+              <button
+                type="button"
+                data-work-filter="project"
+                aria-pressed="false"
+              >
+                Live projects
+              </button>
+              <button
+                type="button"
+                data-work-filter="capability"
+                aria-pressed="false"
+              >
+                Capabilities
+              </button>
+            </div>
+            <p role="status" aria-live="polite" aria-atomic="true"></p>
+          </div>
+          <div class="grid2 work-grid" id="developer-work">
             <article class="repo" id="proj-spacel">
               <div aria-hidden="true" class="work-visual visual-spacel">
                 <small>FEATURED / iOS · ANDROID · WEB</small
@@ -722,14 +751,14 @@
           </div>
           <div class="box" id="rubric">
             <div class="box-head">
-              <span class="file">02 / THE EVALUATION FRAMEWORK</span>
+              <span class="file">03 / MY APPROACH TO QUALITY</span>
             </div>
             <div class="box-body">
               <h2 class="sec">The evaluation rubric, opened up</h2>
               <p>
-                The personal framework behind the project above, combined with
-                criteria used daily on Outlier AI, Scale AI, Appen, OneForma and
-                Test IO work.
+                The quality framework behind my work, combined with criteria
+                used daily on Outlier AI, Scale AI, Appen, OneForma and Test IO
+                work.
               </p>
               <div class="rubric-layout">
                 <div
@@ -1047,10 +1076,11 @@
               </div>
             </div>
           </div>
-          <div class="box" id="activity">
-            <div class="box-head">
-              <span class="file">03 / WORK IN CONTEXT</span>
-            </div>
+          <details class="box activity-disclosure" id="activity">
+            <summary>
+              <span>Explore activity &amp; workstreams</span
+              ><span aria-hidden="true">+</span>
+            </summary>
             <div class="box-body">
               <div class="contrib-head">
                 <h2 class="sec">A continuous practice</h2>
@@ -1111,7 +1141,7 @@
                 <div id="wsRows"></div>
               </div>
             </div>
-          </div>
+          </details>
           <div class="box" id="experience">
             <div class="box-head">
               <span class="file">04 / EXPERIENCE</span>
@@ -1325,7 +1355,7 @@
               </ul>
             </div>
           </div>
-          <div class="cta">
+          <div class="cta" id="developer-contact">
             <h2>Open to remote engagement</h2>
             <p>
               For AI evaluation roles, product builds, or work that needs both
@@ -1373,8 +1403,8 @@
             >Raji Ayatullah <span>/ Evaluation</span></a
           >
           <nav class="eval-nav">
-            <a href="#eval-rubric">Rubric</a><a href="#eval-exp">Experience</a
-            ><a href="#eval-projects">Projects</a
+            <a href="#eval-exp">Experience</a><a href="#eval-rubric">Rubric</a
+            ><a href="#eval-method">Method</a><a href="#eval-projects">Builds</a
             ><a href="#eval-contact">Contact</a>
           </nav>
         </div>
@@ -1393,6 +1423,12 @@
               reasoning behind every judgement.
             </p>
             <div class="eval-criteria">
+              <div class="section-actions">
+                <a class="journey-link" href="#eval-exp"
+                  >See the experience <span aria-hidden="true">↗</span></a
+                >
+                <a href="#eval-rubric">Explore my rubric ↓</a>
+              </div>
               <span>Inspected for — the eight criteria</span>
               <ul>
                 <li>Factual accuracy</li>
@@ -1458,156 +1494,9 @@
             </div>
           </div>
         </section>
-        <section class="eval-sec" id="eval-rubric">
-          <h2><span class="no">01 /</span> The rubric — eight inspections</h2>
-          <p class="lead">
-            A personal framework built from 900+ hours of study, combined with
-            the criteria used daily in professional evaluation work. Every
-            response is scored, compared side-by-side, and justified in writing.
-            Each inspection below names what is checked — and what gets flagged.
-          </p>
-          <div class="eval-rubric">
-            <article class="eval-rrow">
-              <div class="eval-rnum">01</div>
-              <div>
-                <h3>Factual accuracy</h3>
-                <p>
-                  Every factual claim is verified — independent research and
-                  cross-referencing. Factual errors are separated from opinion,
-                  inference and uncertain claims, and unsupported claims are
-                  called out, even when plausible.
-                </p>
-                <span class="eval-flag"
-                  >Hallucinations, misinformation or unsupported claims</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">02</div>
-              <div>
-                <h3>Instruction-following</h3>
-                <p>
-                  Judged against what was actually asked, not what it chose to
-                  answer — compliance with project guidelines, format, scope and
-                  constraints.
-                </p>
-                <span class="eval-flag"
-                  >Requirements missed or constraints ignored</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">03</div>
-              <div>
-                <h3>Logical consistency</h3>
-                <p>
-                  Read end-to-end for internal consistency — no contradictions;
-                  logical gaps identified systematically.
-                </p>
-                <span class="eval-flag"
-                  >Inconsistencies, contradictions or reasoning failures</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">04</div>
-              <div>
-                <h3>Communication quality</h3>
-                <p>
-                  Clarity, grammar and written accuracy, with tone appropriate
-                  and consistent throughout.
-                </p>
-                <span class="eval-flag"
-                  >Tonal inconsistencies or unclear writing</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">05</div>
-              <div>
-                <h3>Reasoning quality</h3>
-                <p>
-                  The reasoning itself is judged, not just the final answer —
-                  stronger reasoning wins side-by-side comparisons.
-                </p>
-                <span class="eval-flag"
-                  >Broken chains, skipped steps or unsupported conclusions</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">06</div>
-              <div>
-                <h3>Relevance</h3>
-                <p>
-                  Relevance to the request, plus depth and usefulness for the
-                  audience.
-                </p>
-                <span class="eval-flag"
-                  >Off-topic, padded, or correct but not useful</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">07</div>
-              <div>
-                <h3>Completeness</h3>
-                <p>
-                  Every part of the request covered — multi-part prompts checked
-                  part by part.
-                </p>
-                <span class="eval-flag"
-                  >Parts left unanswered or the response stops short</span
-                >
-              </div>
-            </article>
-            <article class="eval-rrow">
-              <div class="eval-rnum">08</div>
-              <div>
-                <h3>Safety</h3>
-                <p>
-                  Reviewed as a standing criterion on every response, against
-                  project safety guidelines.
-                </p>
-                <span class="eval-flag"
-                  >Any breach of safety guidelines, whatever its other
-                  scores</span
-                >
-              </div>
-            </article>
-          </div>
-        </section>
-        <section class="eval-sec" id="eval-method">
-          <h2><span class="no">02 /</span> How a verdict is reached</h2>
-          <div class="eval-steps">
-            <div class="eval-step">
-              <span class="big">1</span><code>STEP 01</code
-              ><b>Score against the rubric</b>
-              <p>
-                Each criterion scored independently against structured
-                guidelines.
-              </p>
-            </div>
-            <div class="eval-step">
-              <span class="big">2</span><code>STEP 02</code
-              ><b>Compare &amp; rank</b>
-              <p>
-                Side-by-side comparison of competing responses under the same
-                criteria.
-              </p>
-            </div>
-            <div class="eval-step">
-              <span class="big">3</span><code>STEP 03</code
-              ><b>Justify in writing</b>
-              <p>
-                Detailed written feedback supporting every decision and ranking.
-              </p>
-            </div>
-          </div>
-        </section>
         <section class="eval-sec" id="eval-exp">
           <h2>
-            <span class="no">03 /</span> The record — evaluation experience
+            <span class="no">01 /</span> The record — evaluation experience
           </h2>
           <p class="lead">
             Evaluation roles first — the building work is in the
@@ -1646,6 +1535,177 @@
               <p>
                 AI content evaluated across client workflows; prompt engineering
                 to test model behaviour under varied instruction sets.
+              </p>
+            </div>
+          </div>
+        </section>
+        <section class="eval-sec" id="eval-rubric">
+          <h2><span class="no">02 /</span> The rubric — eight inspections</h2>
+          <p class="lead">
+            A personal framework built from 900+ hours of study, combined with
+            the criteria used daily in professional evaluation work. Every
+            response is scored, compared side-by-side, and justified in writing.
+            Open an inspection to see what I check — and what gets flagged.
+          </p>
+          <div class="eval-rubric">
+            <details class="eval-rrow" id="eval-criterion-accuracy" open>
+              <summary>
+                <span class="eval-rnum">01</span>
+                <h3>Factual accuracy</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Every factual claim is verified — independent research and
+                  cross-referencing. Factual errors are separated from opinion,
+                  inference and uncertain claims, and unsupported claims are
+                  called out, even when plausible.
+                </p>
+                <span class="eval-flag"
+                  >Hallucinations, misinformation or unsupported claims</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-instruction">
+              <summary>
+                <span class="eval-rnum">02</span>
+                <h3>Instruction-following</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Judged against what was actually asked, not what it chose to
+                  answer — compliance with project guidelines, format, scope and
+                  constraints.
+                </p>
+                <span class="eval-flag"
+                  >Requirements missed or constraints ignored</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-logic">
+              <summary>
+                <span class="eval-rnum">03</span>
+                <h3>Logical consistency</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Read end-to-end for internal consistency — no contradictions;
+                  logical gaps identified systematically.
+                </p>
+                <span class="eval-flag"
+                  >Inconsistencies, contradictions or reasoning failures</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-communication">
+              <summary>
+                <span class="eval-rnum">04</span>
+                <h3>Communication quality</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Clarity, grammar and written accuracy, with tone appropriate
+                  and consistent throughout.
+                </p>
+                <span class="eval-flag"
+                  >Tonal inconsistencies or unclear writing</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-reasoning">
+              <summary>
+                <span class="eval-rnum">05</span>
+                <h3>Reasoning quality</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  The reasoning itself is judged, not just the final answer —
+                  stronger reasoning wins side-by-side comparisons.
+                </p>
+                <span class="eval-flag"
+                  >Broken chains, skipped steps or unsupported conclusions</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-relevance">
+              <summary>
+                <span class="eval-rnum">06</span>
+                <h3>Relevance</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Relevance to the request, plus depth and usefulness for the
+                  audience.
+                </p>
+                <span class="eval-flag"
+                  >Off-topic, padded, or correct but not useful</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-completeness">
+              <summary>
+                <span class="eval-rnum">07</span>
+                <h3>Completeness</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Every part of the request covered — multi-part prompts checked
+                  part by part.
+                </p>
+                <span class="eval-flag"
+                  >Parts left unanswered or the response stops short</span
+                >
+              </div>
+            </details>
+            <details class="eval-rrow" id="eval-criterion-safety">
+              <summary>
+                <span class="eval-rnum">08</span>
+                <h3>Safety</h3>
+                <span aria-hidden="true" class="disclosure-mark">+</span>
+              </summary>
+              <div class="criterion-body">
+                <p>
+                  Reviewed as a standing criterion on every response, against
+                  project safety guidelines.
+                </p>
+                <span class="eval-flag"
+                  >Any breach of safety guidelines, whatever its other
+                  scores</span
+                >
+              </div>
+            </details>
+          </div>
+        </section>
+        <section class="eval-sec" id="eval-method">
+          <h2><span class="no">03 /</span> How a verdict is reached</h2>
+          <div class="eval-steps">
+            <div class="eval-step">
+              <span class="big">1</span><code>STEP 01</code
+              ><b>Score against the rubric</b>
+              <p>
+                Each criterion scored independently against structured
+                guidelines.
+              </p>
+            </div>
+            <div class="eval-step">
+              <span class="big">2</span><code>STEP 02</code
+              ><b>Compare &amp; rank</b>
+              <p>
+                Side-by-side comparison of competing responses under the same
+                criteria.
+              </p>
+            </div>
+            <div class="eval-step">
+              <span class="big">3</span><code>STEP 03</code
+              ><b>Justify in writing</b>
+              <p>
+                Detailed written feedback supporting every decision and ranking.
               </p>
             </div>
           </div>
@@ -1819,6 +1879,7 @@
           >
           <nav class="free-nav">
             <a href="#free-work">Work</a><a href="#free-services">Services</a
+            ><a href="#free-process">Process</a
             ><a href="#free-contact">Hire me</a>
           </nav>
         </div>
@@ -1907,7 +1968,29 @@
             <h2>Built to be used.</h2>
             <p>Products, experiments and the capabilities behind them.</p>
           </div>
-          <div class="free-gallery">
+          <div class="work-explorer" data-work-controls="freelance-work" hidden>
+            <div role="group" aria-label="Filter freelance work">
+              <button type="button" data-work-filter="all" aria-pressed="true">
+                All work
+              </button>
+              <button
+                type="button"
+                data-work-filter="project"
+                aria-pressed="false"
+              >
+                Live projects
+              </button>
+              <button
+                type="button"
+                data-work-filter="capability"
+                aria-pressed="false"
+              >
+                Capabilities
+              </button>
+            </div>
+            <p role="status" aria-live="polite" aria-atomic="true"></p>
+          </div>
+          <div class="free-gallery work-grid" id="freelance-work">
             <article class="proj">
               <div class="proj-cover cover-1">
                 <small>Flagship · iOS · Android · Web</small
@@ -2193,7 +2276,8 @@
             </div>
           </div>
         </section>
-        <section class="free-sec">
+        <section class="free-sec" id="free-process">
+          <p class="eyebrow">03 / PROCESS</p>
           <h2>How it <span>works</span></h2>
           <div class="steps3">
             <div class="step3">

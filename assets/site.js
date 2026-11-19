@@ -30,6 +30,7 @@
         freelance: "Freelance Product Development",
       }[name];
     if (focus) views[name].focus({ preventScroll: true });
+    requestAnimationFrame(syncSections);
   }
   function go(name) {
     showView(name, true);
@@ -38,7 +39,7 @@
       "",
       name === "gateway" ? location.pathname + location.search : "#" + name,
     );
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
   document.querySelectorAll("[data-go]").forEach(function (b) {
     b.addEventListener("click", function (e) {
@@ -47,6 +48,27 @@
       go(b.getAttribute("data-go"));
     });
   });
+  function revealDestination(target) {
+    var card = target.closest(".work-grid > article");
+    if (card && card.hidden) {
+      var controls = document.querySelector(
+        '[data-work-controls="' + card.parentElement.id + '"]',
+      );
+      if (controls) controls.querySelector('[data-work-filter="all"]').click();
+    }
+    var disclosure = target.closest("details");
+    while (disclosure) {
+      disclosure.open = true;
+      disclosure = disclosure.parentElement.closest("details");
+    }
+    target.classList.add("is-visible");
+    var ancestor = target.parentElement;
+    while (ancestor) {
+      if (ancestor.classList.contains("reveal"))
+        ancestor.classList.add("is-visible");
+      ancestor = ancestor.parentElement;
+    }
+  }
   function restoreRoute() {
     var id;
     try {
@@ -58,11 +80,12 @@
     var v = target && target.closest('[id^="view-"]');
     var name = Object.hasOwn(views, id) ? id : v ? v.id.slice(5) : "gateway";
     showView(name, false);
-    if (target)
+    if (target) {
+      revealDestination(target);
       requestAnimationFrame(function () {
         target.scrollIntoView();
       });
-    else window.scrollTo(0, 0);
+    } else window.scrollTo(0, 0);
   }
   window.addEventListener("popstate", restoreRoute);
   window.addEventListener("hashchange", restoreRoute);
@@ -96,38 +119,174 @@
       localStorage.setItem("raji-theme", dark ? "dark" : "light");
     } catch (e) {}
   });
-  /* Section navigation follows reading position. */
-  var tabs = Array.prototype.slice.call(document.querySelectorAll(".gh-tab"));
-  tabs.forEach(function (t) {
-    t.addEventListener("click", function () {
-      tabs.forEach(function (x) {
-        x.classList.toggle("active", x === t);
-      });
-    });
+  /* The same section/scroll feedback across all three perspectives. */
+  var sectionNavs = Array.from(
+    document.querySelectorAll(".gh-tabs, .eval-nav, .free-nav"),
+  ).map(function (nav) {
+    var header = nav.closest(".gh-sticky, .eval-header, .free-header");
+    var track = document.createElement("div");
+    track.className = "reading-progress";
+    track.setAttribute("aria-hidden", "true");
+    track.appendChild(document.createElement("span"));
+    header.appendChild(track);
+    return {
+      nav: nav,
+      header: header,
+      view: nav.closest('[id^="view-"]'),
+      progress: track.firstChild,
+      links: Array.from(nav.querySelectorAll('a[href^="#"]')),
+    };
   });
-  /* Active tab follows the last section whose top has passed 30% of the viewport (Overview at the top). */
-  var tabFor = [
-    ["projects", 1],
-    ["rubric", 2],
-    ["activity", 2],
-    ["experience", 2],
-    ["skills", 3],
-    ["education", 4],
-  ];
-  function syncTabs() {
-    if (dev.hidden) return;
-    var line = window.innerHeight * 0.3,
-      idx = 0;
-    tabFor.forEach(function (p) {
-      var el = document.getElementById(p[0]);
-      if (el && el.getBoundingClientRect().top <= line) idx = p[1];
-    });
-    tabs.forEach(function (t, i) {
-      t.classList.toggle("active", i === idx);
+  function syncSections() {
+    if (!sectionNavs) return;
+    sectionNavs.forEach(function (item) {
+      if (item.view.hidden) return;
+      var line = item.header.getBoundingClientRect().height + 60;
+      var active = null;
+      item.links.forEach(function (link) {
+        var target = document.getElementById(link.hash.slice(1));
+        if (target && target.getBoundingClientRect().top <= line) active = link;
+      });
+      item.links.forEach(function (link) {
+        link.classList.toggle("active", link === active);
+        if (link === active) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+      var total = document.documentElement.scrollHeight - window.innerHeight;
+      item.progress.style.transform =
+        "scaleX(" +
+        (total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0) +
+        ")";
     });
   }
-  window.addEventListener("scroll", syncTabs, { passive: true });
-  window.addEventListener("resize", syncTabs);
+  var scrollQueued = false;
+  function queueSectionSync() {
+    if (scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(function () {
+      scrollQueued = false;
+      syncSections();
+    });
+  }
+  window.addEventListener("scroll", queueSectionSync, { passive: true });
+  window.addEventListener("resize", queueSectionSync);
+  document.addEventListener("toggle", queueSectionSync, true);
+  syncSections();
+
+  /* Real projects and capabilities remain distinct, without leaving the page. */
+  document
+    .querySelectorAll("[data-work-controls]")
+    .forEach(function (controls) {
+      var grid = document.getElementById(controls.dataset.workControls);
+      var cards = Array.from(grid.children);
+      var realProjects = [
+        "proj-spacel",
+        "proj-aurelia",
+        "proj-pulse",
+        "proj-nomad-eats",
+        "proj-mindgarden",
+      ];
+      cards.forEach(function (card) {
+        card.dataset.workKind =
+          realProjects.includes(card.id) ||
+          card.id.startsWith("free-proj-") ||
+          card.querySelector(".cover-1")
+            ? "project"
+            : "capability";
+      });
+      var buttons = Array.from(controls.querySelectorAll("[data-work-filter]"));
+      function filter(kind) {
+        buttons.forEach(function (button) {
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.workFilter === kind),
+          );
+        });
+        cards.forEach(function (card) {
+          card.hidden = kind !== "all" && card.dataset.workKind !== kind;
+        });
+        var count = cards.filter(function (card) {
+          return !card.hidden;
+        }).length;
+        controls.querySelector('[role="status"]').textContent =
+          kind === "all"
+            ? cards.filter(function (card) {
+                return card.dataset.workKind === "project";
+              }).length +
+              " live projects · " +
+              cards.filter(function (card) {
+                return card.dataset.workKind === "capability";
+              }).length +
+              " capabilities"
+            : count + (kind === "project" ? " live projects" : " capabilities");
+        queueSectionSync();
+      }
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          filter(button.dataset.workFilter);
+        });
+      });
+      controls.hidden = false;
+      filter("all");
+    });
+
+  /* Progressive enhancement: content stays visible without observer support. */
+  if ("IntersectionObserver" in window) {
+    var revealObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -24px 0px", threshold: 0 },
+    );
+    document
+      .querySelectorAll(
+        ".gh-container > section > .box, .gh-container .cta, .eval-sec, .free-sec, #free-work",
+      )
+      .forEach(function (section) {
+        section.classList.add("reveal");
+        revealObserver.observe(section);
+      });
+  }
+
+  /* Printing includes content hidden only by interactive exploration. */
+  var printState = null;
+  window.addEventListener("beforeprint", function () {
+    if (printState) return;
+    printState = {
+      details: Array.from(document.querySelectorAll("details")).map(
+        function (el) {
+          return { el: el, open: el.open };
+        },
+      ),
+      cards: Array.from(document.querySelectorAll(".work-grid > article")).map(
+        function (el) {
+          return { el: el, hidden: el.hidden };
+        },
+      ),
+    };
+    printState.details.forEach(function (item) {
+      item.el.open = true;
+    });
+    printState.cards.forEach(function (item) {
+      item.el.hidden = false;
+    });
+  });
+  window.addEventListener("afterprint", function () {
+    if (!printState) return;
+    printState.details.forEach(function (item) {
+      item.el.open = item.open;
+    });
+    printState.cards.forEach(function (item) {
+      item.el.hidden = item.hidden;
+    });
+    printState = null;
+    queueSectionSync();
+  });
 
   /* --- rubric (developer) --- */
   var rBtns = Array.prototype.slice.call(
@@ -1167,6 +1326,7 @@
         }
         var el = e.g ? document.getElementById(e.g) : null;
         if (el) {
+          revealDestination(el);
           el.scrollIntoView({
             behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
               .matches
