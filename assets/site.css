@@ -2731,9 +2731,6 @@ kbd {
   .gw-row-main > span {
     font-size: 12px;
   }
-  .gw-row-main > span br {
-    display: none;
-  }
   .gw-arrow {
     right: 2px;
     top: 46px;
