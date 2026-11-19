@@ -3534,3 +3534,22 @@ kbd {
   font: 9px var(--mono);
   color: var(--muted);
 }
+
+/* Printing must reset the theme variables, not just the page background. */
+@media print {
+  #view-developer,
+  #view-developer[data-theme="dark"] {
+    --bg: #fff;
+    --bg-inset: #f3f3f3;
+    --bg-muted: #eee;
+    --card: #fff;
+    --text: #111;
+    --text2: #444;
+    --text3: #555;
+    --link: #111;
+    --accent: #173f35;
+    --border: #aaa;
+    --border-muted: #aaa;
+  }
+  #view-developer .btn { display: none; }
+}
