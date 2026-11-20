@@ -1268,6 +1268,9 @@ img {
   }
 }
 @media print {
+  details::details-content {
+    content-visibility: visible;
+  }
   #work-grid > article[hidden] {
     display: block !important;
   }

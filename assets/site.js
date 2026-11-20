@@ -184,6 +184,25 @@
       );
     });
 
+  // Print the full record, then restore the reader's exact disclosure state.
+  var printClosedDetails = null;
+  window.addEventListener("beforeprint", function () {
+    if (printClosedDetails !== null) return;
+    printClosedDetails = Array.from(
+      document.querySelectorAll("details:not([open])"),
+    );
+    printClosedDetails.forEach(function (detail) {
+      detail.open = true;
+    });
+  });
+  window.addEventListener("afterprint", function () {
+    if (printClosedDetails === null) return;
+    printClosedDetails.forEach(function (detail) {
+      detail.open = false;
+    });
+    printClosedDetails = null;
+  });
+
   // Browsers can restore form values on history navigation; keep the grid in sync.
   window.addEventListener("pageshow", filterWork);
   filterWork();
