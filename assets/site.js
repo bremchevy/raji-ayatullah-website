@@ -280,6 +280,67 @@
       });
   }
 
+  /* Native scroll does the stacking; only the paper's tiny tuck is scrubbed. */
+  (function initPaperStudy() {
+    var study = document.querySelector(".paper-study");
+    if (!study) return;
+    var stack = study.querySelector(".paper-stack"),
+      leaves = Array.from(stack.children),
+      motion = window.matchMedia(
+        "(min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)",
+      ),
+      frame = 0;
+
+    function update() {
+      frame = 0;
+      var enabled = motion.matches;
+      study.classList.toggle("is-scroll-ready", enabled);
+      if (!enabled) {
+        leaves.forEach(function (leaf) {
+          leaf.style.removeProperty("--paper-tuck");
+        });
+        return;
+      }
+      if (views.gateway.hidden || document.hidden) return;
+      // Read the natural flow positions, not the moving sticky rectangles.
+      var top = stack.getBoundingClientRect().top;
+      var measures = leaves.map(function (leaf) {
+        var height = leaf.offsetHeight;
+        var position = top;
+        top += height + parseFloat(getComputedStyle(leaf).marginBottom);
+        return { top: position, height: height };
+      });
+      leaves.forEach(function (leaf, index) {
+        var next = measures[index + 1];
+        var tuck = next
+          ? Math.max(
+              0,
+              Math.min(
+                1,
+                (80 + measures[index].height - next.top) /
+                  measures[index].height,
+              ),
+            )
+          : 0;
+        leaf.style.setProperty("--paper-tuck", tuck.toFixed(4));
+      });
+    }
+    function queue() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue, { passive: true });
+    window.addEventListener("pageshow", queue);
+    document.addEventListener("visibilitychange", queue);
+    motion.addEventListener("change", queue);
+    new MutationObserver(queue).observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-view"],
+    });
+    if ("ResizeObserver" in window) new ResizeObserver(queue).observe(stack);
+    update();
+  })();
+
   /* Printing includes content hidden only by interactive exploration. */
   var printState = null;
   window.addEventListener("beforeprint", function () {

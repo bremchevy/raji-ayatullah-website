@@ -4095,6 +4095,294 @@ summary:focus-visible {
   }
 }
 
+/* Project photographs: a little physical character, not someone else's scrapbook. */
+.repo:has(> .project-shot),
+.proj:has(> .project-shot) {
+  border-radius: 3px;
+}
+.project-shot {
+  position: relative;
+  overflow: visible;
+  border: 8px solid #fffefa;
+  border-radius: 1px;
+  outline: 1px solid #d9ddd2;
+  box-shadow: 0 8px 17px -12px #17251f70;
+  transform: rotate(-1deg);
+  margin-top: 10px;
+  margin-bottom: 27px;
+}
+.project-shot img {
+  outline: 1px solid #d9ddd2;
+}
+.project-shot::after {
+  content: "";
+  position: absolute;
+  top: -17px;
+  left: calc(50% - 28px);
+  width: 56px;
+  height: 21px;
+  background: #d5c591a6;
+  border-inline: 1px dashed #b4a36e;
+  transform: rotate(5deg);
+  pointer-events: none;
+}
+.repo:nth-child(even) > .project-shot,
+.proj:nth-child(even) > .project-shot {
+  transform: rotate(1deg);
+}
+.proj > .project-shot {
+  margin: 24px 22px 0;
+  border: 8px solid #fffefa;
+  border-radius: 1px;
+}
+#proj-spacel > .project-shot,
+.proj:first-child > .project-shot {
+  display: block;
+  align-self: center;
+  min-height: 0;
+  aspect-ratio: 16 / 10;
+  margin: 25px 0 25px 25px;
+  border: 10px solid #fffefa;
+  border-radius: 1px;
+}
+#proj-spacel > .project-shot img,
+.proj:first-child > .project-shot img {
+  height: 100%;
+  aspect-ratio: auto;
+}
+@media (max-width: 560px) {
+  #proj-spacel > .project-shot,
+  .proj:first-child > .project-shot {
+    margin: 24px 22px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .project-shot,
+  .repo:nth-child(even) > .project-shot,
+  .proj:nth-child(even) > .project-shot {
+    transform: none;
+  }
+}
+@media print {
+  .project-shot,
+  .repo:nth-child(even) > .project-shot,
+  .proj:nth-child(even) > .project-shot {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* A small, native-scroll paper study. The unenhanced layout is a readable list. */
+.paper-study {
+  display: grid;
+  grid-template-columns: 0.85fr 1.35fr;
+  align-items: start;
+  gap: clamp(36px, 6vw, 90px);
+  padding: 100px 12px 90px;
+  margin-top: 80px;
+  border-top: 1px solid var(--line);
+}
+.paper-study-intro h2 {
+  font: 400 clamp(36px, 4.2vw, 58px) / 1.09 var(--serif);
+  letter-spacing: -0.045em;
+  margin: 22px 0;
+}
+.paper-study-intro h2 em {
+  color: #55734e;
+  font-weight: 400;
+}
+.paper-study-intro > p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 300px;
+}
+.paper-study-intro > .paper-margin-note {
+  font: italic 20px/1.5 var(--serif);
+  color: var(--green);
+  border-left: 1px solid #9dac8d;
+  padding-left: 17px;
+  margin: 30px 0;
+}
+.paper-skip {
+  display: block;
+  width: fit-content;
+  font: 11px var(--mono);
+  color: var(--muted);
+  margin-top: 28px;
+  padding: 7px 0;
+}
+.paper-stack {
+  min-width: 0;
+  padding: 0 8px 25px;
+}
+.paper-leaf {
+  --paper-angle: -2deg;
+  --paper-tuck: 0;
+  position: relative;
+  padding: 20px;
+  border: 1px solid #d5d8ca;
+  background: #fffefa;
+  box-shadow:
+    0 3px 3px #243b3110,
+    0 16px 34px -20px #243b3150;
+  margin-bottom: 70px;
+  transform: rotate(var(--paper-angle));
+  transform-origin: 50% 0;
+}
+.paper-leaf:nth-child(2) {
+  --paper-angle: 2deg;
+  background: #eef0e5;
+}
+.paper-leaf:nth-child(3) {
+  --paper-angle: -1deg;
+  background: #f2eee2;
+  margin-bottom: 0;
+}
+.paper-leaf::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: calc(50% - 38px);
+  top: -12px;
+  width: 76px;
+  height: 26px;
+  background: #d5c591a6;
+  border-left: 1px dashed #b4a36e;
+  border-right: 1px dashed #b4a36e;
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+.paper-leaf-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font: 9px/1.5 var(--mono);
+  letter-spacing: 0.06em;
+  color: #626c64;
+  padding: 4px 0 18px;
+}
+.paper-photo {
+  display: block;
+  border: 1px solid #d9ddd2;
+  background: #e8eddf;
+  overflow: hidden;
+}
+.paper-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+}
+.paper-caption {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 23px;
+}
+.paper-caption h3 {
+  font: italic 24px/1.2 var(--serif);
+  letter-spacing: -0.025em;
+  margin: 0 0 10px;
+}
+.paper-caption p {
+  margin: 0;
+  font: 10px/1.6 var(--mono);
+  color: #626c64;
+}
+.paper-caption > a {
+  font: 11px/1.5 var(--mono);
+  white-space: nowrap;
+  padding: 12px 0;
+}
+@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .paper-study.is-scroll-ready .paper-study-intro {
+    position: sticky;
+    top: 90px;
+  }
+  .paper-study.is-scroll-ready .paper-leaf {
+    position: sticky;
+    top: 80px;
+    margin-bottom: 150px;
+    transform: translateY(calc(var(--paper-tuck) * -12px))
+      rotate(calc(var(--paper-angle) - var(--paper-tuck) * 2deg))
+      scale(calc(1 - var(--paper-tuck) * 0.055));
+  }
+  .paper-study.is-scroll-ready .paper-leaf:last-child {
+    margin-bottom: 0;
+  }
+  /* Keyboard readers see every link in normal flow, never beneath another card. */
+  .paper-study.is-scroll-ready:has(:focus-visible) .paper-leaf {
+    position: relative;
+    top: auto;
+    transform: none;
+  }
+}
+@media (max-width: 899px) {
+  .paper-study {
+    grid-template-columns: 1fr;
+    padding: 60px 5px 20px;
+    gap: 40px;
+    margin-top: 55px;
+  }
+  .paper-study-intro > p:not(.eyebrow) {
+    max-width: 430px;
+  }
+  .paper-study-intro h2 {
+    font-size: clamp(36px, 7vw, 54px);
+  }
+  .paper-leaf {
+    padding: 15px;
+    margin-bottom: 45px;
+    --paper-angle: -1deg;
+  }
+  .paper-leaf:nth-child(2) {
+    --paper-angle: 1deg;
+  }
+}
+@media (max-width: 560px) {
+  .paper-caption {
+    display: block;
+    padding-top: 18px;
+  }
+  .paper-caption h3 {
+    font-size: 23px;
+  }
+  .paper-caption > a {
+    display: inline-block;
+    margin-top: 7px;
+  }
+  .paper-leaf-label {
+    font-size: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paper-leaf {
+    transform: none;
+  }
+}
+@media print {
+  .paper-study {
+    display: block;
+    padding: 30px 0;
+  }
+  .paper-study-intro,
+  .paper-study.is-scroll-ready .paper-study-intro,
+  .paper-leaf,
+  .paper-study.is-scroll-ready .paper-leaf {
+    position: static;
+    transform: none;
+    margin-bottom: 25px;
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  .paper-skip {
+    display: none;
+  }
+}
+
 /* Printing must reset the theme variables, not just the page background. */
 @media print {
   #view-developer,
