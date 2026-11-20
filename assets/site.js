@@ -363,10 +363,12 @@
 
   // Print the full record, then restore the reader's exact disclosure state.
   var printClosedDetails = null;
+  var printScroll = null;
   window.addEventListener("beforeprint", function () {
     previewsPrinting = true;
     syncPreviews();
     if (printClosedDetails !== null) return;
+    printScroll = { left: scrollX, top: scrollY };
     printClosedDetails = Array.from(
       document.querySelectorAll("details:not([open])"),
     );
@@ -382,6 +384,21 @@
       detail.open = false;
     });
     printClosedDetails = null;
+    var position = printScroll;
+    printScroll = null;
+    // Disclosure toggles and each scene's print reset change the document's
+    // height. Restore only after their screen layouts have settled, rather
+    // than letting scroll anchoring strand the reader in an earlier scene.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        if (position)
+          window.scrollTo({
+            left: position.left,
+            top: position.top,
+            behavior: "instant",
+          });
+      });
+    });
   });
 
   // Browsers can restore form values on history navigation; keep the grid in sync.

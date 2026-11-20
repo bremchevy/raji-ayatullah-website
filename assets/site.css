@@ -1373,6 +1373,11 @@ img {
   }
 }
 @media print {
+  /* Safari can paint the corner overlay white over the entire panel when
+     printing without backgrounds. The corners are decorative, not content. */
+  .bone-panel::after {
+    display: none !important;
+  }
   .project-video,
   .blueprint-frame {
     display: none !important;

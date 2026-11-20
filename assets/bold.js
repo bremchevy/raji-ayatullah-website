@@ -250,7 +250,10 @@
   window.addEventListener("resize", measure);
   window.addEventListener("load", measure);
   window.addEventListener("pageshow", measure);
-  window.addEventListener("afterprint", measure);
+  window.addEventListener("afterprint", function () {
+    // Firefox can still expose print geometry inside the afterprint event.
+    requestAnimationFrame(measure);
+  });
   document.addEventListener("visibilitychange", function () {
     lastY = scrollY;
     lastTime = performance.now();

@@ -134,7 +134,7 @@
   });
   window.addEventListener("afterprint", function () {
     printing = false;
-    measure();
+    requestAnimationFrame(measure);
   });
   document.addEventListener("visibilitychange", queue);
   if ("ResizeObserver" in window) new ResizeObserver(measure).observe(header);
