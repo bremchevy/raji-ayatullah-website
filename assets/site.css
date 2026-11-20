@@ -630,25 +630,6 @@ img {
 .project-video.poster-only {
   visibility: hidden;
 }
-.project-preview-play {
-  position: absolute;
-  right: 29px;
-  bottom: 29px;
-  z-index: 1;
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 1px solid #ffffff90;
-  background: #111820ed;
-  color: white;
-  font: 11px/1.5 var(--mono);
-}
-.project-preview-play:hover {
-  background: #194cc5;
-}
-.project-preview-play:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 3px;
-}
 .project-shot:focus-visible {
   outline-offset: -5px;
 }

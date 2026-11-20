@@ -8,9 +8,6 @@
   var result = document.getElementById("work-result");
   var empty = document.getElementById("work-empty");
   var previewVideos = Array.from(document.querySelectorAll(".project-video"));
-  var previewButtons = Array.from(
-    document.querySelectorAll("[data-preview-name]"),
-  );
   var previewMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var previewConnection = navigator.connection;
   var previewPaused =
@@ -21,7 +18,7 @@
 
   function shouldPlayPreview(video) {
     return (
-      (!previewPaused || video.dataset.userPlaying === "true") &&
+      !previewPaused &&
       !previewsPrinting &&
       !document.hidden &&
       video.dataset.inView === "true" &&
@@ -30,73 +27,43 @@
       !video.closest("[hidden]")
     );
   }
-  function updatePreviewButton(video) {
-    var button = video.previewButton;
-    if (!button) return;
-    // No controls cover a playing loop. Only offer Play when browser policy,
-    // a motion/data preference, or a failed transfer requires a direct tap.
-    button.hidden = !(
-      video.dataset.blocked === "true" ||
-      video.dataset.failed === "true" ||
-      (video.paused && (previewPaused || !("IntersectionObserver" in window)))
-    );
-  }
   function syncPreviews() {
     previewVideos.forEach(function (video) {
       if (!shouldPlayPreview(video)) {
         video.pause();
-        updatePreviewButton(video);
+        video.classList.add("poster-only");
         return;
       }
       // Keep video bytes off the initial page load and out of hidden cards.
       if (!video.getAttribute("src")) video.src = video.dataset.src;
-      video.classList.remove("poster-only");
       video.muted = true;
       var playback = video.play();
       if (playback)
         playback.catch(function (error) {
-          // Offer an explicit retry when the browser blocks muted autoplay.
+          // Low Power Mode may block even muted autoplay. Keep the original
+          // still image, never replace it with a Play overlay.
           if (error.name === "NotAllowedError") {
             video.dataset.blocked = "true";
-            updatePreviewButton(video);
+            video.classList.add("poster-only");
           }
         });
-      updatePreviewButton(video);
     });
   }
-  previewButtons.forEach(function (button) {
-    var video = document.getElementById(button.getAttribute("aria-controls"));
-    video.previewButton = button;
-    updatePreviewButton(video);
-    button.addEventListener("click", function () {
-      video.dataset.userPlaying = "true";
-      video.dataset.inView = "true";
-      delete video.dataset.blocked;
-      if (video.error || video.dataset.failed === "true") {
-        delete video.dataset.failed;
-        video.load();
-      }
-      // Call play synchronously from this tap, as iPhone Safari requires
-      // when its autoplay policy blocks automatic playback.
-      syncPreviews();
-    });
-  });
   previewVideos.forEach(function (video) {
     video.muted = true;
+    if (!("IntersectionObserver" in window)) video.dataset.inView = "true";
     video.addEventListener("playing", function () {
       // Safari can queue "playing" after rejecting play(), while still paused.
-      // Do not hide its direct-tap fallback unless playback actually started.
       if (!video.paused) delete video.dataset.blocked;
       if (!shouldPlayPreview(video)) video.pause();
-      updatePreviewButton(video);
+      video.classList.toggle("poster-only", video.paused);
     });
     video.addEventListener("pause", function () {
-      updatePreviewButton(video);
+      video.classList.add("poster-only");
     });
     video.addEventListener("error", function () {
       video.dataset.failed = "true";
       video.classList.add("poster-only");
-      updatePreviewButton(video);
     });
   });
   if ("IntersectionObserver" in window) {
@@ -115,17 +82,20 @@
       previewObserver.observe(video);
     });
   }
-  document.addEventListener("visibilitychange", syncPreviews);
+  document.addEventListener("visibilitychange", function () {
+    // Retry once when returning from Settings (for example after Low Power
+    // Mode is switched off), without an idle loop or a manual-play control.
+    if (!document.hidden) {
+      previewVideos.forEach(function (video) {
+        delete video.dataset.blocked;
+      });
+    }
+    syncPreviews();
+  });
   function respectPreviewPreferences() {
     previewPaused =
       previewMotion.matches ||
       Boolean(previewConnection && previewConnection.saveData);
-    if (previewPaused) {
-      previewVideos.forEach(function (video) {
-        delete video.dataset.userPlaying;
-        video.classList.add("poster-only");
-      });
-    }
     syncPreviews();
   }
   previewMotion.addEventListener("change", respectPreviewPreferences);
