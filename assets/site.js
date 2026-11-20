@@ -84,7 +84,9 @@
   previewVideos.forEach(function (video) {
     video.muted = true;
     video.addEventListener("playing", function () {
-      delete video.dataset.blocked;
+      // Safari can queue "playing" after rejecting play(), while still paused.
+      // Do not hide its direct-tap fallback unless playback actually started.
+      if (!video.paused) delete video.dataset.blocked;
       if (!shouldPlayPreview(video)) video.pause();
       updatePreviewButton(video);
     });
