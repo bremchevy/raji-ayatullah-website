@@ -1,0 +1,72 @@
+.more-closing,
+.more-number { display: none; }
+.stats strong .more-original { font: inherit; }
+.more-stats-scene { display: contents; }
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .more-enabled .more-target { --more-p: 0; }
+  .more-enabled .more-clip { overflow: clip; }
+  .more-enabled .more-stats-scene { display: block; height: 180svh; }
+  .more-enabled .more-stats-scene .stats {
+    position: sticky;
+    top: var(--more-top, 100px);
+  }
+  /* Unpin only the plate that cannot fit. The count and other scenes still run. */
+  .more-enabled .more-stats-static { height: auto; }
+  .more-enabled .more-stats-static .stats { position: relative; top: auto; }
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0;
+  }
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats > div {
+    position: relative;
+    padding: 25px 20px;
+    min-width: 0;
+    border: 1px solid var(--line);
+  }
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats > div::before {
+    content: "";
+    position: absolute;
+    inset: 10px 12px auto;
+    height: 9px;
+    border-top: 1px solid var(--blue);
+    background: repeating-linear-gradient(90deg, var(--blue) 0 1px, transparent 1px 25%);
+    transform: scaleX(var(--more-p));
+    transform-origin: left;
+  }
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats strong { display: block; color: var(--blue); }
+  .more-enabled .more-number { display: block; font: clamp(48px, 8vw, 116px)/1 var(--display); letter-spacing: -.08em; }
+  .more-enabled .more-original { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .more-enabled[data-more-demo~="evidence-deal"] .proof-grid { perspective: 1200px; padding: 24px 0; }
+  .more-enabled[data-more-demo~="evidence-deal"] .proof-card { transform-origin: center bottom; border: 1px solid var(--blue); box-shadow: 8px 8px 0 #194cc515; background-color: var(--paper); }
+  .more-enabled[data-more-demo~="career-blueprint"] .background-records { position: relative; padding-left: 24px; }
+  .more-enabled[data-more-demo~="career-blueprint"] .background-records::before { content: ""; position: absolute; top: 0; bottom: 0; left: 6px; border-left: 2px solid var(--line); }
+  .more-enabled[data-more-demo~="career-blueprint"] .record { position: relative; }
+  .more-enabled[data-more-demo~="career-blueprint"] .record::before { content: ""; position: absolute; left: -19px; top: 0; bottom: 0; width: 2px; background: var(--blue); transform: scaleY(var(--more-p)); transform-origin: top; }
+  .more-enabled[data-more-demo~="career-blueprint"] .job { position: relative; border-left: 3px solid var(--blue); padding-left: 16px; background-image: linear-gradient(90deg, #194cc50d, transparent); }
+  .more-enabled[data-more-demo~="career-blueprint"] .job::before { content: "+"; position: absolute; top: 0; left: -25px; color: var(--blue); font: 24px/1 var(--mono); }
+  .more-enabled[data-more-demo~="career-blueprint"] .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .more-enabled[data-more-demo~="career-blueprint"] .chip { display: block; border: 1px solid var(--blue); padding: 10px; background: var(--paper); white-space: normal; overflow-wrap: anywhere; }
+  .more-enabled[data-more-demo~="contact-ink"] #contact { overflow: clip; }
+  .more-enabled[data-more-demo~="contact-ink"] #contact h2 { transform-origin: left center; background: linear-gradient(90deg, var(--blue) calc(var(--more-p)*100%), transparent 0); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-stroke: 1px var(--blue); }
+  .more-enabled .more-closing { display: block; height: 90svh; min-height: 520px; margin-top: 50px; background: var(--ink); color: var(--paper); overflow: clip; }
+  .more-closing-stage { position: sticky; top: var(--more-top, 80px); height: min(620px, 75svh); display: flex; flex-direction: column; justify-content: center; padding: 25px 5vw; }
+  .more-closing p { color: var(--paper); font: 12px/1.5 var(--mono); letter-spacing: .08em; }
+  .more-closing svg { width: 100%; height: auto; overflow: visible; }
+  .more-closing text { font-family: var(--display); font-weight: 400; stroke: #7599ff; stroke-width: 2px; stroke-dasharray: 1000; stroke-dashoffset: calc(1000*(1 - var(--more-p))); fill: #7599ff; fill-opacity: var(--more-fill, 0); }
+  .more-enabled .more-target:focus-within .proof-card,
+  .more-enabled .more-target:focus-within .job,
+  .more-enabled .more-target:focus-within .chip,
+  .more-enabled .more-target:focus-within .edu-card,
+  .more-enabled .more-target:focus-within .cert-list li { transform: none !important; }
+}
+@media (forced-colors: active) {
+  .more-enabled[data-more-demo~="contact-ink"] #contact h2 { background: none; color: CanvasText; -webkit-text-stroke: 0; }
+}
+@media print {
+  .more-stats-scene { display: contents !important; }
+  .more-closing, .more-number { display: none !important; }
+  .more-original { position: static !important; clip-path: none !important; width: auto !important; height: auto !important; }
+  .more-target, .more-target * { transform: none !important; box-shadow: none !important; }
+  .more-target h2 { background: none !important; color: black !important; -webkit-text-stroke: 0 !important; }
+}
