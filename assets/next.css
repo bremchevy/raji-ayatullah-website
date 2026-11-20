@@ -145,6 +145,16 @@
     font-size: 20px;
     transform: scale(var(--next-checked, 0));
   }
+  @media (max-width: 700px) {
+    /* Fit all eight panels below Safari's expanded toolbar, without making
+       type smaller. Short screens still use the measured static fallback. */
+    .next-answer-active .framework-heading {
+      margin-bottom: 16px;
+    }
+    .next-answer-active #criteria {
+      row-gap: 12px;
+    }
+  }
 }
 @media print {
   /* Work filters must not remove projects from the full printed record. */
