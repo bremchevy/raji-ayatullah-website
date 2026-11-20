@@ -294,32 +294,17 @@
     );
     drawBlueprints();
   }
-  function measureHeader() {
-    // Bigger text can wrap the sticky navigation. Keep anchor targets clear
-    // of its real height, including after font loading or text/viewport zoom.
-    var offset =
-      Math.ceil(
-        document.querySelector(".site-header").getBoundingClientRect().height +
-          20,
-      ) + "px";
-    if (
-      document.documentElement.style.getPropertyValue("--header-offset") !==
-      offset
-    )
-      document.documentElement.style.setProperty("--header-offset", offset);
-    queueBlueprintDraw();
-  }
   window.addEventListener("scroll", queueBlueprintDraw, { passive: true });
-  window.addEventListener("resize", measureHeader);
-  window.addEventListener("load", measureHeader);
+  window.addEventListener("resize", queueBlueprintDraw);
+  window.addEventListener("load", queueBlueprintDraw);
   window.addEventListener("afterprint", queueBlueprintDraw);
   document.addEventListener("visibilitychange", queueBlueprintDraw);
   document.addEventListener("toggle", queueBlueprintDraw, true);
   // Filtering and opening records can move sections without a scroll event.
   if ("ResizeObserver" in window) {
-    var layoutObserver = new ResizeObserver(measureHeader);
-    layoutObserver.observe(document.querySelector("main"));
-    layoutObserver.observe(document.querySelector(".site-header"));
+    new ResizeObserver(queueBlueprintDraw).observe(
+      document.querySelector("main"),
+    );
   }
   if ("MutationObserver" in window) {
     new MutationObserver(queueBlueprintDraw).observe(
@@ -327,11 +312,10 @@
       { subtree: true, attributes: true, attributeFilter: ["hidden"] },
     );
   }
-  if (document.fonts) document.fonts.ready.then(measureHeader);
+  if (document.fonts) document.fonts.ready.then(queueBlueprintDraw);
   if (previewMotion.addEventListener)
     previewMotion.addEventListener("change", respectBlueprintMotion);
   else previewMotion.addListener(respectBlueprintMotion);
-  measureHeader();
   respectBlueprintMotion();
 
   // Navigation visibility is independent of the decorative drawing.
