@@ -1,0 +1,208 @@
+/* Owner-selected scroll scenes. The original content is the fallback. */
+.bold-hero,
+.bold-marquee {
+  display: none;
+}
+.bold-deck-stage {
+  display: contents;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .bold-enabled .bold-hero {
+    display: block;
+    position: relative;
+    height: var(--hero-travel, 2300px);
+    max-width: 1600px;
+    margin-inline: auto;
+  }
+  .bold-hero-stage {
+    position: sticky;
+    top: var(--motion-header, 68px);
+    height: calc(100svh - var(--motion-header, 68px));
+    overflow: hidden;
+    background: var(--blue);
+    color: var(--paper);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px 20px;
+  }
+  .bold-hero-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(#ffffff20 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff20 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+  .bold-hero-meta {
+    position: relative;
+    font: 10px/1.7 var(--mono);
+    letter-spacing: 0.12em;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .bold-skip {
+    position: absolute;
+    z-index: 2;
+    right: 20px;
+    top: 70px;
+    color: var(--paper);
+    font: 11px/1.5 var(--mono);
+    padding: 8px;
+  }
+  .bold-skip:hover,
+  .bold-skip:focus-visible {
+    color: white;
+    outline-color: white;
+  }
+  .bold-hero-type {
+    position: absolute;
+    inset-inline: 0;
+    top: 37%;
+    text-align: center;
+    font: 400 clamp(90px, 30vw, 380px) / 1 var(--display);
+    letter-spacing: -0.09em;
+    transform-origin: 45% 53%;
+  }
+  .bold-hero-after {
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 35px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transform: translateY(110%);
+  }
+  .bold-hero-after strong {
+    font: 400 clamp(48px, 16vw, 140px) / 1 var(--display);
+    letter-spacing: -0.06em;
+  }
+  .bold-hero-after span {
+    font: 11px/1.5 var(--mono);
+    margin-block: 24px;
+    color: #8baeff;
+  }
+  .bold-enabled .services.deck-active {
+    display: block;
+    position: relative;
+    height: var(--deck-travel);
+  }
+  .deck-active .bold-deck-stage {
+    display: block;
+    position: sticky;
+    top: calc(var(--motion-header, 68px) + 36px);
+    height: min(620px, calc(100svh - var(--motion-header, 68px) - 58px));
+    overflow: hidden;
+    perspective: 1100px;
+  }
+  .deck-active .service {
+    position: absolute;
+    inset: 12px 0 8px;
+    padding: 28px;
+    border: 1px solid var(--blue);
+    background: var(--paper);
+    transform-origin: center top;
+    transform: var(--card-transform, none);
+    display: flex;
+    flex-direction: column;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .deck-active .service:nth-child(even) {
+    background: var(--blue);
+    color: var(--paper);
+  }
+  .deck-active .service:nth-child(3n) {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .deck-active .service .n {
+    font: 100px/1 var(--display);
+    letter-spacing: -0.07em;
+    margin-bottom: auto;
+    color: inherit;
+  }
+  .deck-active .service h3 {
+    font: 38px/1.05 var(--display);
+    letter-spacing: -0.05em;
+    margin: 30px 0 18px;
+  }
+  .deck-active .service p {
+    color: inherit;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .bold-enabled .bold-marquee {
+    display: block;
+    height: var(--marquee-travel, 1800px);
+    margin-inline: calc(-1 * var(--gutter));
+  }
+  .bold-marquee-stage {
+    position: sticky;
+    top: calc(var(--motion-header, 68px) + 4px);
+    height: calc(100svh - var(--motion-header, 68px) - 20px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .bold-marquee-label {
+    padding-inline: 24px;
+    margin-bottom: 42px;
+    font: 10px/1.6 var(--mono);
+    letter-spacing: 0.1em;
+    color: #8baeff;
+  }
+  .bold-marquee-line {
+    display: flex;
+    width: max-content;
+    font: 400 clamp(82px, 24vw, 250px) / 1.02 var(--display);
+    letter-spacing: -0.06em;
+    white-space: nowrap;
+  }
+  .bold-marquee-line:nth-of-type(even) {
+    color: transparent;
+    -webkit-text-stroke: 1px #a6bfff;
+  }
+  .bold-marquee-line span {
+    padding-right: 0.3em;
+  }
+  .bold-marquee-foot {
+    margin-top: 40px;
+    padding-inline: 24px;
+    font: 11px/1.5 var(--mono);
+    color: #8baeff;
+  }
+  .signature-wait .signature-rail,
+  .signature-wait .signature-cross,
+  .signature-wait .signature-dot {
+    animation-play-state: paused;
+  }
+  @media (max-height: 520px) {
+    .bold-hero-stage {
+      padding-block: 16px;
+    }
+    .bold-hero-after strong {
+      font-size: clamp(32px, 12svh, 64px);
+    }
+    .bold-hero-after span {
+      margin-block: 12px;
+    }
+    .bold-marquee-line {
+      font-size: clamp(38px, 14svh, 70px);
+    }
+    .bold-marquee-label {
+      margin-bottom: 18px;
+    }
+    .bold-marquee-foot {
+      margin-top: 18px;
+    }
+  }
+}
