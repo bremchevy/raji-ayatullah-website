@@ -541,7 +541,7 @@ img {
   background: #ffffff12;
   padding: 10px 6px;
   border-radius: 0;
-  font: 12px var(--mono);
+  font: 16px var(--mono);
 }
 .work-search input::placeholder {
   color: var(--muted);
