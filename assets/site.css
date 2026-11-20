@@ -569,6 +569,8 @@ b {
   padding-bottom: 16px;
 }
 .paper-scene {
+  width: 100%;
+  max-width: 100%;
   min-height: 390px;
 }
 .bird-stage {
