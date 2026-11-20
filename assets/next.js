@@ -32,6 +32,8 @@
     return item.open;
   });
   var keyboardReading = false;
+  var answerProgress = 0;
+  var resumeProgress = null;
   var printing = false;
   var pending = false;
   label.setAttribute("aria-hidden", "true");
@@ -140,6 +142,7 @@
     var progress = clamp(
       (top - bounds.top) / Math.max(1, bounds.height - stageHeight),
     );
+    answerProgress = progress;
     var assembly = assemblyEnabled
       ? clamp(progress / (checklistEnabled ? 0.42 : 0.9))
       : 1;
@@ -218,9 +221,33 @@
         return criterion.open;
       }) ||
       Boolean(linkedCriterion(hashTarget(location.hash)));
+    if (
+      reading &&
+      !wasReading &&
+      answer.classList.contains("next-answer-active")
+    )
+      resumeProgress = answerProgress;
     measure();
     // Native disclosures remain the reading interface. Do not re-pin a closed
     // panel until keyboard focus leaves it. Pointer close restores the scene.
+    if (!reading && wasReading && resumeProgress !== null) {
+      if (answer.classList.contains("next-answer-active")) {
+        // Re-pinning adds the scene's scroll travel back to the document.
+        // Browser scroll anchoring otherwise follows the closed disclosure
+        // past the sticky range. Restore the original visual progress instead.
+        var bounds = answer.getBoundingClientRect();
+        var top = parseFloat(getComputedStyle(stage).top);
+        window.scrollTo({
+          top:
+            scrollY +
+            bounds.top -
+            top +
+            resumeProgress * Math.max(1, bounds.height - stage.offsetHeight),
+          behavior: "instant",
+        });
+      }
+      resumeProgress = null;
+    }
     if (reading && !wasReading && item) {
       requestAnimationFrame(function () {
         item.querySelector("summary").scrollIntoView({
@@ -259,8 +286,20 @@
   if (answer) {
     rubric.addEventListener("focusout", function (event) {
       if (!rubric.contains(event.relatedTarget)) {
+        var nextFocus = event.relatedTarget;
         keyboardReading = false;
         updateReading();
+        // Keyboard focus outside the scene takes priority over its saved
+        // progress. Re-pinning must not strand the newly focused control.
+        requestAnimationFrame(function () {
+          if (
+            nextFocus &&
+            document.activeElement === nextFocus &&
+            nextFocus.matches(":focus-visible") &&
+            !nextFocus.closest(".site-header")
+          )
+            nextFocus.scrollIntoView({ behavior: "instant", block: "nearest" });
+        });
       }
     });
     window.addEventListener("hashchange", revealAnswerHash);
