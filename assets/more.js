@@ -11,7 +11,6 @@
   var selectors = {
     "stats-dimensions": ".stats",
     "evidence-deal": "#evidence",
-    "career-blueprint": ".background-records",
     "contact-ink": "#contact",
     "closing-mark": ".site-footer",
   };
@@ -28,7 +27,7 @@
     var target = document.querySelector(selectors[mode]);
     if (!target) return;
     var enabled = false, queued = false, geometryDirty = true;
-    var items = [], records = [], careerOpened = false, countStart = null;
+    var items = [], countStart = null;
     if (mode === "stats-dimensions") {
       items = Array.from(target.querySelectorAll("strong")).map(function (strong) {
         var node = strong.firstChild, text = node.textContent;
@@ -49,11 +48,6 @@
     } else if (mode === "evidence-deal") {
       items = Array.from(target.querySelectorAll(".proof-card"));
       target.classList.add("more-clip");
-    } else if (mode === "career-blueprint") {
-      records = Array.from(target.querySelectorAll("details"));
-      items = Array.from(target.querySelectorAll(".job,.chip,.edu-card,.cert-list li"));
-      target.classList.add("more-clip");
-      target.addEventListener("toggle", queue, true);
     } else if (mode === "closing-mark") {
       var closing = document.createElement("div");
       closing.className = "more-closing";
@@ -88,7 +82,7 @@
         var plate = target.firstElementChild.getBoundingClientRect();
         if (plate.top >= innerHeight) countStart = null;
         if (plate.top < innerHeight && plate.bottom > 0 && countStart === null) countStart = now;
-        p = countStart === null ? 0 : clamp((now - countStart) / 250);
+        p = countStart === null ? 0 : clamp((now - countStart) / 1000);
         frame.again = countStart !== null && p < 1 && plate.bottom > 0 && plate.top < innerHeight;
         items.forEach(function (item) {
           frame.texts.push([item.el, String(Math.floor(item.value * (1 - Math.pow(1 - p, 3)))) + item.suffix]);
@@ -102,16 +96,6 @@
         var rest = 1 - progress(el);
         transform(el, "translate3d(" + ((i % 2 ? 1 : -1) * rest * 65) + "px," + (rest * 110) + "px,0) rotate(" + ((i % 2 ? 1 : -1) * rest * 14) + "deg) scale(" + (1 - rest * .12) + ")");
       });
-      if (mode === "career-blueprint") {
-        records.forEach(function (record) {
-          if (api.near(record)) style(record, "--more-p", clamp((innerHeight * .8 - record.getBoundingClientRect().top) / Math.max(1, record.offsetHeight)));
-        });
-        items.forEach(function (el, i) {
-          if (!api.near(el)) return;
-          var rest = 1 - progress(el), chip = el.classList.contains("chip"), job = el.classList.contains("job");
-          transform(el, "translate3d(" + ((chip ? (i % 2 ? 8 : -8) : 0) * rest) + "px," + ((chip || job ? 18 : 0) * rest) + "px,0) rotate(" + ((job ? -2 : 0) * rest) + "deg) scale(" + (1 - rest * .04) + ")");
-        });
-      }
       if (mode === "contact-ink") transform(target.querySelector("h2"), "scale(" + (.8 + p * .2) + ")");
       if (mode === "closing-mark") {
         p = clamp((innerHeight * .85 - rect.top) / (innerHeight * .8));
@@ -131,12 +115,6 @@
     function preferences() {
       enabled = !reduced.matches && !printing;
       root.classList.toggle("more-enabled", enabled);
-      // Open the approved career layout once, never on resize or afterprint:
-      // the reader's native toggles and site.js's exact print snapshot win.
-      if (enabled && mode === "career-blueprint" && !careerOpened) {
-        careerOpened = true;
-        records.forEach(function (record) { record.open = true; });
-      }
       if (!enabled) {
         target.querySelectorAll("[style]").forEach(function (el) { api.removeStyle(el, "transform"); });
       }
@@ -144,7 +122,6 @@
     }
     api.watch(target, queue);
     items.forEach(function (item) { api.watch(item.el || item, queue); });
-    records.forEach(function (record) { api.watch(record, queue); });
     if (reduced.addEventListener) reduced.addEventListener("change", preferences);
     else reduced.addListener(preferences);
     addEventListener("scroll", queue, { passive: true });
