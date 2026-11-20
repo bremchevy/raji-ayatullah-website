@@ -143,27 +143,35 @@
     margin-inline: calc(-1 * var(--gutter));
   }
   .bold-marquee-stage {
+    /* Reserve space for both captions and three uncut text rows. */
+    --belt-size: min(
+      clamp(82px, 24vw, 250px),
+      max(26px, calc((100svh - var(--motion-header, 68px) - 190px) / 3.06))
+    );
     position: sticky;
     top: calc(var(--motion-header, 68px) + 4px);
     height: calc(100svh - var(--motion-header, 68px) - 20px);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-block: 24px;
     overflow: hidden;
     background: var(--ink);
     color: var(--paper);
   }
   .bold-marquee-label {
     padding-inline: 24px;
-    margin-bottom: 42px;
+    margin-bottom: 24px;
+    flex-shrink: 0;
     font: 10px/1.6 var(--mono);
     letter-spacing: 0.1em;
     color: #8baeff;
   }
   .bold-marquee-line {
     display: flex;
+    flex-shrink: 0;
     width: max-content;
-    font: 400 clamp(82px, 24vw, 250px) / 1.02 var(--display);
+    font: 400 var(--belt-size) / 1.02 var(--display);
     letter-spacing: -0.06em;
     white-space: nowrap;
   }
@@ -175,8 +183,9 @@
     padding-right: 0.3em;
   }
   .bold-marquee-foot {
-    margin-top: 40px;
+    margin-top: 24px;
     padding-inline: 24px;
+    flex-shrink: 0;
     font: 11px/1.5 var(--mono);
     color: #8baeff;
   }
@@ -194,9 +203,6 @@
     }
     .bold-hero-after span {
       margin-block: 12px;
-    }
-    .bold-marquee-line {
-      font-size: clamp(38px, 14svh, 70px);
     }
     .bold-marquee-label {
       margin-bottom: 18px;
