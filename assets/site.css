@@ -2091,7 +2091,7 @@ kbd {
 }
 .eval-step > .big {
   font: 400 30px var(--serif);
-  color: #9198a6;
+  color: var(--muted);
   margin-bottom: 15px;
 }
 .eval-step > b {
@@ -2504,7 +2504,7 @@ kbd {
 .step3 .n {
   font: 400 35px var(--serif);
   margin-bottom: 20px;
-  color: #9198a6;
+  color: var(--muted);
 }
 .step3 h3 {
   font-size: 17px;
