@@ -7,6 +7,97 @@
   var activeFilter = "all";
   var result = document.getElementById("work-result");
   var empty = document.getElementById("work-empty");
+  var previewVideos = Array.from(document.querySelectorAll(".project-video"));
+  var previewToggle = document.getElementById("toggle-previews");
+  var previewMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var previewConnection = navigator.connection;
+  var previewPaused =
+    previewMotion.matches ||
+    Boolean(previewConnection && previewConnection.saveData);
+  var previewsPrinting = false;
+  var previewObserver = null;
+
+  function shouldPlayPreview(video) {
+    return (
+      !previewPaused &&
+      !previewsPrinting &&
+      !document.hidden &&
+      video.dataset.inView === "true" &&
+      video.dataset.failed !== "true" &&
+      !video.closest("[hidden]")
+    );
+  }
+  function syncPreviews() {
+    previewVideos.forEach(function (video) {
+      if (!shouldPlayPreview(video)) {
+        video.pause();
+        return;
+      }
+      // Keep video bytes off the initial page load and out of hidden cards.
+      if (!video.getAttribute("src")) video.src = video.dataset.src;
+      var playback = video.play();
+      if (playback)
+        playback.catch(function (error) {
+          // Offer an explicit retry when the browser blocks muted autoplay.
+          if (error.name === "NotAllowedError") {
+            previewPaused = true;
+            syncPreviews();
+          }
+        });
+    });
+    previewToggle.textContent = previewPaused
+      ? "Play previews"
+      : "Pause previews";
+  }
+  previewVideos.forEach(function (video) {
+    video.muted = true;
+    video.addEventListener("playing", function () {
+      if (shouldPlayPreview(video)) video.classList.add("has-frame");
+      else video.pause();
+    });
+    video.addEventListener("error", function () {
+      video.dataset.failed = "true";
+      video.classList.remove("has-frame");
+    });
+  });
+  if ("IntersectionObserver" in window) {
+    previewObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          entry.target.dataset.inView = String(
+            entry.isIntersecting && entry.intersectionRatio >= 0.15,
+          );
+        });
+        syncPreviews();
+      },
+      { threshold: 0.15 },
+    );
+    previewVideos.forEach(function (video) {
+      previewObserver.observe(video);
+    });
+  }
+  previewToggle.hidden = !previewObserver;
+  previewToggle.addEventListener("click", function () {
+    previewPaused = !previewPaused;
+    syncPreviews();
+  });
+  document.addEventListener("visibilitychange", syncPreviews);
+  function respectPreviewPreferences() {
+    if (
+      previewMotion.matches ||
+      (previewConnection && previewConnection.saveData)
+    ) {
+      previewPaused = true;
+      previewVideos.forEach(function (video) {
+        video.classList.remove("has-frame");
+      });
+    }
+    syncPreviews();
+  }
+  previewMotion.addEventListener("change", respectPreviewPreferences);
+  if (previewConnection && previewConnection.addEventListener) {
+    previewConnection.addEventListener("change", respectPreviewPreferences);
+  }
 
   function searchText(value) {
     return value.replace(/\s+/g, " ").trim().toLocaleLowerCase();
@@ -29,6 +120,7 @@
     });
     result.textContent = count + " of " + cards.length + " items";
     empty.hidden = count !== 0;
+    syncPreviews();
   }
   filters.forEach(function (button) {
     button.addEventListener("click", function () {
@@ -207,6 +299,8 @@
   // Print the full record, then restore the reader's exact disclosure state.
   var printClosedDetails = null;
   window.addEventListener("beforeprint", function () {
+    previewsPrinting = true;
+    syncPreviews();
     if (printClosedDetails !== null) return;
     printClosedDetails = Array.from(
       document.querySelectorAll("details:not([open])"),
@@ -216,6 +310,8 @@
     });
   });
   window.addEventListener("afterprint", function () {
+    previewsPrinting = false;
+    syncPreviews();
     if (printClosedDetails === null) return;
     printClosedDetails.forEach(function (detail) {
       detail.open = false;
