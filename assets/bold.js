@@ -95,25 +95,28 @@
     if (motion.matches) return;
     headerHeight = Math.ceil(header.getBoundingClientRect().height);
     root.style.setProperty("--motion-header", headerHeight + "px");
+    // Match the stages' stable 100svh, not innerHeight: Safari toolbar changes
+    // must not resize earlier scenes and move a native hash target mid-scroll.
+    var viewportHeight = stage.offsetHeight + headerHeight;
     hero.style.setProperty(
       "--hero-travel",
-      Math.max(900, innerHeight * 2.75) + "px",
+      Math.max(900, viewportHeight * 2.75) + "px",
     );
     marquee.style.setProperty(
       "--marquee-travel",
-      Math.max(900, innerHeight * 2.15) + "px",
+      Math.max(900, viewportHeight * 2.15) + "px",
     );
 
     // Never clip real service copy to fit a scene. Short landscapes and large
     // text/zoom use the original readable grid instead of the pinned deck.
-    deck.classList.toggle("deck-active", innerHeight - headerHeight >= 500);
+    deck.classList.toggle("deck-active", viewportHeight - headerHeight >= 500);
     if (deck.classList.contains("deck-active")) {
       var fits = serviceCards.every(function (card) {
         return card.scrollHeight <= card.clientHeight + 1;
       });
       deck.classList.toggle("deck-active", fits);
     }
-    deckLength = (serviceCards.length - 1 + deckHold) * innerHeight * 0.8;
+    deckLength = (serviceCards.length - 1 + deckHold) * viewportHeight * 0.8;
     deck.style.setProperty(
       "--deck-travel",
       deckLength + deckStage.clientHeight + "px",
