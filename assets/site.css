@@ -1321,6 +1321,25 @@ img {
     min-width: 70px;
   }
 }
+/* iPhone Page Zoom can leave less than 320 CSS px without pinching. */
+@media screen and (max-width: 319px) {
+  html {
+    scroll-padding-top: calc(var(--motion-header, 128px) + 16px);
+  }
+  body {
+    overflow-wrap: anywhere;
+  }
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+  .site-header nav {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    gap: 0 12px;
+    margin-left: 0;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
