@@ -212,3 +212,10 @@
     }
   }
 }
+/* Page Zoom leaves too little room for a readable decorative viewport. */
+@media screen and (max-width: 319px) {
+  .bold-enabled .bold-hero,
+  .bold-enabled .bold-marquee {
+    display: none;
+  }
+}
