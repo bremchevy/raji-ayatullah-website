@@ -8,13 +8,16 @@
   var result = document.getElementById("work-result");
   var empty = document.getElementById("work-empty");
 
+  function searchText(value) {
+    return value.replace(/\s+/g, " ").trim().toLocaleLowerCase();
+  }
   function filterWork() {
-    var query = search.value.trim().toLocaleLowerCase();
+    var query = searchText(search.value);
     var count = 0;
     cards.forEach(function (card) {
       var matches =
         (activeFilter === "all" || card.dataset.kind === activeFilter) &&
-        card.textContent.toLocaleLowerCase().includes(query);
+        searchText(card.textContent).includes(query);
       card.hidden = !matches;
       if (matches) count += 1;
     });
