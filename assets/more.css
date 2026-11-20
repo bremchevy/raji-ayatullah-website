@@ -11,7 +11,7 @@
     position: sticky;
     top: var(--more-top, 100px);
   }
-  /* Unpin only the plate that cannot fit. The count and other scenes still run. */
+  /* An oversized plate unpins and shows final values; other scenes stay active. */
   .more-enabled .more-stats-static { height: auto; }
   .more-enabled .more-stats-static .stats { position: relative; top: auto; }
   .more-enabled[data-more-demo~="stats-dimensions"] .stats {
@@ -35,7 +35,7 @@
     transform-origin: left;
   }
   .more-enabled[data-more-demo~="stats-dimensions"] .stats strong { display: block; color: var(--blue); }
-  .more-enabled .more-number { display: block; font: clamp(48px, 8vw, 116px)/1 var(--display); letter-spacing: -.08em; }
+  .more-enabled .more-number { display: block; font: clamp(48px, 8vw, 116px)/1 var(--display); letter-spacing: -.08em; white-space: nowrap; }
   .more-enabled .more-original { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .more-enabled[data-more-demo~="evidence-deal"] .proof-grid { perspective: 1200px; padding: 24px 0; }
   .more-enabled[data-more-demo~="evidence-deal"] .proof-card { transform-origin: center bottom; border: 1px solid var(--blue); box-shadow: 8px 8px 0 #194cc515; background-color: var(--paper); }
@@ -47,6 +47,13 @@
   .more-closing svg { width: 100%; height: auto; overflow: visible; }
   .more-closing text { font-family: var(--display); font-weight: 400; stroke: #7599ff; stroke-width: 2px; stroke-dasharray: 1000; stroke-dashoffset: calc(1000*(1 - var(--more-p))); fill: #7599ff; fill-opacity: var(--more-fill, 0); }
   .more-enabled .more-target:focus-within .proof-card { transform: none !important; }
+}
+/* Page Zoom must leave enough width for an intact 900+, not a digit per row. */
+@media screen and (max-width: 319px) {
+  .stats,
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats { grid-template-columns: minmax(0, 1fr); }
+  .more-enabled[data-more-demo~="stats-dimensions"] .stats > div { padding-inline: 14px; }
+  .stats > div + div { border-left: 0; border-top: 1px dashed var(--line); }
 }
 @media (forced-colors: active) {
   .more-enabled[data-more-demo~="contact-ink"] #contact h2 { background: none; color: CanvasText; -webkit-text-stroke: 0; }

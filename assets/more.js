@@ -27,7 +27,7 @@
     var target = document.querySelector(selectors[mode]);
     if (!target) return;
     var enabled = false, queued = false, geometryDirty = true;
-    var items = [], countStart = null;
+    var items = [], countStart = null, statsFit = true;
     if (mode === "stats-dimensions") {
       items = Array.from(target.querySelectorAll("strong")).map(function (strong) {
         var node = strong.firstChild, text = node.textContent;
@@ -70,8 +70,10 @@
         if (mode === "stats-dimensions" || mode === "closing-mark") {
           var top = (header ? header.offsetHeight : 0) + 16;
           style(target, "--more-top", top + "px");
-          if (mode === "stats-dimensions")
-            frame.statsFit = target.firstElementChild.offsetHeight + top + 16 <= innerHeight;
+          if (mode === "stats-dimensions") {
+            statsFit = target.firstElementChild.offsetHeight + top + 16 <= innerHeight;
+            frame.statsFit = statsFit;
+          }
         }
       }
       if (!api.near(target)) return frame;
@@ -80,9 +82,14 @@
       var p = progress(target);
       if (mode === "stats-dimensions") {
         var plate = target.firstElementChild.getBoundingClientRect();
+        // First-edge intersection can finish the count below the fold. Wait
+        // for the whole plate, including the bottom row, below the header.
+        var fullyVisible = statsFit && plate.top >= (header ? header.offsetHeight : 0) + 16 && plate.bottom <= innerHeight - 16;
         if (plate.top >= innerHeight) countStart = null;
-        if (plate.top < innerHeight && plate.bottom > 0 && countStart === null) countStart = now;
-        p = countStart === null ? 0 : clamp((now - countStart) / 1000);
+        if (fullyVisible && countStart === null) countStart = now;
+        // If all four numbers cannot fit together, keep static final values
+        // rather than starting an unseen count or leaving unreadable zeroes.
+        p = !statsFit ? 1 : countStart === null ? 0 : clamp((now - countStart) / 1000);
         frame.again = countStart !== null && p < 1 && plate.bottom > 0 && plate.top < innerHeight;
         items.forEach(function (item) {
           frame.texts.push([item.el, String(Math.floor(item.value * (1 - Math.pow(1 - p, 3)))) + item.suffix]);
