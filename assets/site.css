@@ -464,8 +464,26 @@ img {
   height: 12px;
   overflow: visible;
   fill: none;
-  stroke: var(--line);
+  stroke: var(--blue);
   stroke-width: 1;
+}
+.section-rule path {
+  vector-effect: non-scaling-stroke;
+}
+.blueprint-frame {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1;
+  pointer-events: none;
+  z-index: 1;
+}
+.blueprint-frame rect {
+  vector-effect: non-scaling-stroke;
 }
 .work-controls {
   display: flex;
@@ -1082,14 +1100,18 @@ img {
   border: 1px solid var(--blue);
   padding: 13px 21px;
 }
-@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
-  .traces-ready .section-rule path {
+@media (prefers-reduced-motion: no-preference) {
+  .blueprint-ready .section-rule path,
+  .blueprint-ready .blueprint-frame rect {
     stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    transition: stroke-dashoffset 0.7s ease-out;
+    stroke-dashoffset: calc(1 - var(--blueprint-progress, 1));
   }
-  .traces-ready .is-in-view .section-rule path {
-    stroke-dashoffset: 0;
+  .blueprint-ready .section-rule .blueprint-ticks {
+    stroke-dashoffset: clamp(
+      0,
+      calc(2.5 - var(--blueprint-progress, 1) * 2.5),
+      1
+    );
   }
 }
 @media (max-width: 1000px) {
@@ -1336,7 +1358,8 @@ img {
   }
   .signature-rail,
   .signature-cross,
-  .section-rule path {
+  .section-rule path,
+  .blueprint-frame rect {
     stroke-dashoffset: 0 !important;
   }
 }
@@ -1356,7 +1379,8 @@ img {
   }
 }
 @media print {
-  .project-video {
+  .project-video,
+  .blueprint-frame {
     display: none !important;
   }
   details::details-content {

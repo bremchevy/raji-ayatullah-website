@@ -242,25 +242,86 @@
   });
   revealHash();
 
-  // Only decorative dimension lines respond to scroll. Content is always visible.
+  // Blueprint ink follows scroll in both directions. Content never waits for it.
+  var blueprintTargets = Array.from(
+    document.querySelectorAll(".section-heading, #work-grid > article"),
+  );
+  var blueprintFrame = 0;
+  var blueprintInk = "http://www.w3.org/2000/svg";
+  cards.forEach(function (card) {
+    var frame = document.createElementNS(blueprintInk, "svg");
+    frame.setAttribute("class", "blueprint-frame");
+    frame.setAttribute("viewBox", "0 0 100 100");
+    frame.setAttribute("preserveAspectRatio", "none");
+    frame.setAttribute("aria-hidden", "true");
+    frame.setAttribute("focusable", "false");
+    var outline = document.createElementNS(blueprintInk, "rect");
+    outline.setAttribute("width", "100");
+    outline.setAttribute("height", "100");
+    outline.setAttribute("pathLength", "1");
+    frame.appendChild(outline);
+    card.appendChild(frame);
+  });
+
+  function drawBlueprints() {
+    blueprintFrame = 0;
+    if (previewMotion.matches || document.hidden) return;
+    var viewport = window.innerHeight;
+    // Batch layout reads before updating ink; no work runs while scroll is idle.
+    var positions = blueprintTargets.map(function (target) {
+      return target.getBoundingClientRect();
+    });
+    blueprintTargets.forEach(function (target, index) {
+      var bounds = positions[index];
+      if (!bounds.width || !bounds.height) return;
+      var progress = Math.max(
+        0,
+        Math.min(1, (viewport * 0.9 - bounds.top) / (viewport * 0.55)),
+      ).toFixed(3);
+      if (target.style.getPropertyValue("--blueprint-progress") !== progress)
+        target.style.setProperty("--blueprint-progress", progress);
+    });
+  }
+  function queueBlueprintDraw() {
+    if (!previewMotion.matches && !document.hidden && !blueprintFrame)
+      blueprintFrame = requestAnimationFrame(drawBlueprints);
+  }
+  function respectBlueprintMotion() {
+    // Without JS, or with reduced motion, every line is already fully drawn.
+    document.documentElement.classList.toggle(
+      "blueprint-ready",
+      !previewMotion.matches,
+    );
+    drawBlueprints();
+  }
+  window.addEventListener("scroll", queueBlueprintDraw, { passive: true });
+  window.addEventListener("resize", queueBlueprintDraw);
+  window.addEventListener("load", queueBlueprintDraw);
+  window.addEventListener("afterprint", queueBlueprintDraw);
+  document.addEventListener("visibilitychange", queueBlueprintDraw);
+  document.addEventListener("toggle", queueBlueprintDraw, true);
+  // Filtering and opening records can move sections without a scroll event.
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(queueBlueprintDraw).observe(
+      document.querySelector("main"),
+    );
+  }
+  if ("MutationObserver" in window) {
+    new MutationObserver(queueBlueprintDraw).observe(
+      document.getElementById("work-grid"),
+      { subtree: true, attributes: true, attributeFilter: ["hidden"] },
+    );
+  }
+  if (document.fonts) document.fonts.ready.then(queueBlueprintDraw);
+  if (previewMotion.addEventListener)
+    previewMotion.addEventListener("change", respectBlueprintMotion);
+  else previewMotion.addListener(respectBlueprintMotion);
+  respectBlueprintMotion();
+
+  // Navigation visibility is independent of the decorative drawing.
   if ("IntersectionObserver" in window) {
     var sections = Array.from(document.querySelectorAll("main > section[id]"));
     var navLinks = Array.from(document.querySelectorAll(".site-header nav a"));
-    var traceObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-in-view");
-            traceObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: "0px 0px -8% 0px" },
-    );
-    document.documentElement.classList.add("traces-ready");
-    document.querySelectorAll(".page-section").forEach(function (section) {
-      traceObserver.observe(section);
-    });
     var visible = new Map();
     var navObserver = new IntersectionObserver(
       function (entries) {
