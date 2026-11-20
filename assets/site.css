@@ -270,7 +270,7 @@ img {
   }
   .signature-dot {
     visibility: hidden;
-    animation: signature-dot 0.01s step-end var(--dot-delay) forwards;
+    animation: signature-dot 0s var(--dot-delay) forwards;
   }
 }
 @keyframes signature-draw {
@@ -285,6 +285,7 @@ img {
   }
 }
 @keyframes signature-dot {
+  from,
   to {
     visibility: visible;
   }
