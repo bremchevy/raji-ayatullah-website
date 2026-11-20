@@ -251,13 +251,13 @@
   cards.forEach(function (card) {
     var frame = document.createElementNS(blueprintInk, "svg");
     frame.setAttribute("class", "blueprint-frame");
-    frame.setAttribute("viewBox", "0 0 100 100");
-    frame.setAttribute("preserveAspectRatio", "none");
     frame.setAttribute("aria-hidden", "true");
     frame.setAttribute("focusable", "false");
     var outline = document.createElementNS(blueprintInk, "rect");
-    outline.setAttribute("width", "100");
-    outline.setAttribute("height", "100");
+    // Use viewport units, not a stretched viewBox: normalized dashes must
+    // follow the rendered perimeter even on very wide or tall cards.
+    outline.setAttribute("width", "100%");
+    outline.setAttribute("height", "100%");
     outline.setAttribute("pathLength", "1");
     frame.appendChild(outline);
     card.appendChild(frame);
