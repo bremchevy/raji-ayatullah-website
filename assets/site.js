@@ -1,6 +1,76 @@
 (function () {
   "use strict";
 
+  // Every scroll scene shares one native-refresh frame. Read all geometry
+  // before any scene writes styles, rather than forcing layout between rAFs.
+  var frameJobs = [];
+  var motionFrame = 0;
+  var motionStyles = new WeakMap();
+  var motionViews = new WeakMap();
+  var motionListeners = new WeakMap();
+  var motionObserver =
+    "IntersectionObserver" in window
+      ? new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              motionViews.set(entry.target, entry.isIntersecting);
+              motionListeners.get(entry.target).forEach(function (notify) {
+                notify();
+              });
+            });
+          },
+          { rootMargin: "100% 0px" },
+        )
+      : null;
+  var motionFrameAPI = (window.portfolioMotion = {
+    request: function (read, write) {
+      frameJobs.push({ read: read, write: write });
+      if (!motionFrame)
+        motionFrame = requestAnimationFrame(function (now) {
+          motionFrame = 0;
+          var jobs = frameJobs;
+          frameJobs = [];
+          var values = jobs.map(function (job) {
+            return job.read(now);
+          });
+          jobs.forEach(function (job, index) {
+            if (values[index] != null) job.write(values[index]);
+          });
+        });
+      return motionFrame;
+    },
+    watch: function (target, notify) {
+      if (!motionObserver) return;
+      if (!motionListeners.has(target)) {
+        motionListeners.set(target, []);
+        motionObserver.observe(target);
+      }
+      motionListeners.get(target).push(notify);
+    },
+    near: function (target) {
+      return motionViews.get(target) !== false;
+    },
+    style: function (target, property, value) {
+      var values = motionStyles.get(target);
+      if (!values) {
+        values = Object.create(null);
+        motionStyles.set(target, values);
+      }
+      value = String(value);
+      if (values[property] === value) return;
+      values[property] = value;
+      target.style.setProperty(property, value);
+    },
+    removeStyle: function (target, property) {
+      var values = motionStyles.get(target);
+      if (values) delete values[property];
+      target.style.removeProperty(property);
+    },
+    text: function (target, value) {
+      if (target.textContent !== value) target.textContent = value;
+    },
+  });
+
   var cards = Array.from(document.querySelectorAll("#work-grid > article"));
   var search = document.getElementById("work-search");
   var filters = Array.from(document.querySelectorAll("[data-filter]"));
@@ -233,28 +303,29 @@
     card.appendChild(frame);
   });
 
-  function drawBlueprints() {
+  function readBlueprints() {
     blueprintFrame = 0;
-    if (previewMotion.matches || document.hidden) return;
+    if (previewMotion.matches || document.hidden || previewsPrinting) return;
     var viewport = window.innerHeight;
-    // Batch layout reads before updating ink; no work runs while scroll is idle.
-    var positions = blueprintTargets.map(function (target) {
-      return target.getBoundingClientRect();
-    });
-    blueprintTargets.forEach(function (target, index) {
-      var bounds = positions[index];
-      if (!bounds.width || !bounds.height) return;
-      var progress = Math.max(
+    return blueprintTargets.map(function (target) {
+      if (!motionFrameAPI.near(target)) return null;
+      var bounds = target.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return null;
+      return Math.max(
         0,
         Math.min(1, (viewport * 0.9 - bounds.top) / (viewport * 0.55)),
       ).toFixed(3);
-      if (target.style.getPropertyValue("--blueprint-progress") !== progress)
-        target.style.setProperty("--blueprint-progress", progress);
+    });
+  }
+  function drawBlueprints(progress) {
+    blueprintTargets.forEach(function (target, index) {
+      if (progress[index] != null)
+        motionFrameAPI.style(target, "--blueprint-progress", progress[index]);
     });
   }
   function queueBlueprintDraw() {
     if (!previewMotion.matches && !document.hidden && !blueprintFrame)
-      blueprintFrame = requestAnimationFrame(drawBlueprints);
+      blueprintFrame = motionFrameAPI.request(readBlueprints, drawBlueprints);
   }
   function respectBlueprintMotion() {
     // Without JS, or with reduced motion, every line is already fully drawn.
@@ -262,8 +333,11 @@
       "blueprint-ready",
       !previewMotion.matches,
     );
-    drawBlueprints();
+    queueBlueprintDraw();
   }
+  blueprintTargets.forEach(function (target) {
+    motionFrameAPI.watch(target, queueBlueprintDraw);
+  });
   window.addEventListener("scroll", queueBlueprintDraw, { passive: true });
   window.addEventListener("resize", queueBlueprintDraw);
   window.addEventListener("load", queueBlueprintDraw);

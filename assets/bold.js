@@ -15,6 +15,9 @@
   var lastY = scrollY;
   var lastTime = performance.now();
   var velocity = 0;
+  var frame = window.portfolioMotion;
+  var geometry = null;
+  var printing = false;
 
   function element(tag, className, text) {
     var node = document.createElement(tag);
@@ -116,48 +119,73 @@
       });
       deck.classList.toggle("deck-active", fits);
     }
+    if (!deck.classList.contains("deck-active")) {
+      serviceCards.forEach(function (card) {
+        frame.removeStyle(card, "--card-transform");
+      });
+    }
     deckLength = (serviceCards.length - 1 + deckHold) * viewportHeight * 0.8;
     deck.style.setProperty(
       "--deck-travel",
       deckLength + deckStage.clientHeight + "px",
     );
+    geometry = {
+      stageHeight: stage.offsetHeight,
+      deckHeight: deckStage.clientHeight,
+      marqueeHeight: marqueeStage.offsetHeight,
+      unitWidths: marqueeLines.map(function (line) {
+        return line.firstElementChild.offsetWidth;
+      }),
+    };
     queue();
   }
 
-  function draw(now) {
+  function read(now) {
     ticking = false;
-    if (motion.matches || document.hidden) return;
+    if (motion.matches || document.hidden || printing || !geometry) return;
     var y = scrollY;
-    var dt = Math.max(16, now - lastTime);
+    var dt = Math.max(1, now - lastTime);
     var speed = clamp(((y - lastY) / dt) * 1000, -4500, 4500);
-    velocity += (speed - velocity) * 0.22;
+    // Preserve the 60 Hz feel without slowing speed estimates or changing
+    // damping when the browser supplies 90/120/144 Hz animation frames.
+    velocity += (speed - velocity) * (1 - Math.pow(0.78, dt / (1000 / 60)));
     lastY = y;
     lastTime = now;
 
-    // Read geometry before writing transforms. No work continues while idle.
-    var heroBounds = hero.getBoundingClientRect();
-    var deckBounds = deck.getBoundingClientRect();
-    var marqueeBounds = marquee.getBoundingClientRect();
-    var stageHeight = stage.offsetHeight;
-    var deckHeight = deckStage.clientHeight;
-    var marqueeHeight = marqueeStage.offsetHeight;
-    var unitWidths = marqueeLines.map(function (line) {
-      return line.firstElementChild.offsetWidth;
-    });
-    var hp = progress(
-      heroBounds,
-      headerHeight,
-      heroBounds.height - stageHeight,
-    );
-    heroType.style.transform =
-      "scale(" + (1 + hp * hp * 32) + ") rotate(" + -hp * 6 + "deg)";
-    after.style.transform =
-      "translateY(" + 110 * (1 - clamp((hp - 0.68) / 0.32, 0, 1)) + "%)";
-    if (deck.classList.contains("deck-active")) {
+    return {
+      hero: frame.near(hero) ? hero.getBoundingClientRect() : null,
+      deck:
+        frame.near(deck) && deck.classList.contains("deck-active")
+          ? deck.getBoundingClientRect()
+          : null,
+      marquee: frame.near(marquee) ? marquee.getBoundingClientRect() : null,
+      width: innerWidth,
+      height: innerHeight,
+    };
+  }
+  function draw(bounds) {
+    if (bounds.hero) {
+      var hp = progress(
+        bounds.hero,
+        headerHeight,
+        bounds.hero.height - geometry.stageHeight,
+      );
+      frame.style(
+        heroType,
+        "transform",
+        "scale(" + (1 + hp * hp * 32) + ") rotate(" + -hp * 6 + "deg)",
+      );
+      frame.style(
+        after,
+        "transform",
+        "translateY(" + 110 * (1 - clamp((hp - 0.68) / 0.32, 0, 1)) + "%)",
+      );
+    }
+    if (bounds.deck) {
       // Hold each complete card for most of its step, including the last card.
       // Only the short eased interval between holds may overlap its copy.
       var segment =
-        progress(deckBounds, headerHeight + 36, deckLength) *
+        progress(bounds.deck, headerHeight + 36, deckLength) *
         (serviceCards.length - 1 + deckHold);
       var current = Math.floor(segment);
       var transition = clamp(
@@ -170,8 +198,9 @@
       serviceCards.forEach(function (card, index) {
         var incoming = Math.max(0, index - dp);
         var passed = Math.min(Math.max(0, dp - index), 4);
-        var offset = incoming * (deckHeight + 20) - passed * 16;
-        card.style.setProperty(
+        var offset = incoming * (geometry.deckHeight + 20) - passed * 16;
+        frame.style(
+          card,
           "--card-transform",
           "translate3d(0," +
             offset +
@@ -182,39 +211,45 @@
             "deg)",
         );
       });
-    } else {
-      serviceCards.forEach(function (card) {
-        card.style.removeProperty("--card-transform");
-      });
     }
+    if (!bounds.marquee) return;
     var mp = progress(
-      marqueeBounds,
+      bounds.marquee,
       headerHeight + 4,
-      marqueeBounds.height - marqueeHeight,
+      bounds.marquee.height - geometry.marqueeHeight,
     );
     marqueeLines.forEach(function (line, index) {
       // Wrap identical spans, never pan past the beginning into an empty belt.
-      var width = unitWidths[index] || 1;
-      var travel = (index % 2 ? 1 : -1) * mp * innerWidth * 3;
+      var width = geometry.unitWidths[index] || 1;
+      var travel = (index % 2 ? 1 : -1) * mp * bounds.width * 3;
       var x = -width + (((travel % width) + width) % width);
-      line.style.transform =
+      frame.style(
+        line,
+        "transform",
         "translate3d(" +
-        x +
-        "px,0,0) skewX(" +
-        clamp(-velocity / 30, -16, 16) +
-        "deg)";
+          x +
+          "px,0,0) skewX(" +
+          clamp(-velocity / 30, -16, 16) +
+          "deg)",
+      );
     });
     if (
       Math.abs(velocity) > 4 &&
-      marqueeBounds.top < innerHeight &&
-      marqueeBounds.bottom > headerHeight
+      bounds.marquee.top < bounds.height &&
+      bounds.marquee.bottom > headerHeight
     )
       queue();
   }
   function queue() {
-    if (!motion.matches && !document.hidden && !ticking) {
+    if (
+      !motion.matches &&
+      !document.hidden &&
+      !printing &&
+      !ticking &&
+      (frame.near(hero) || frame.near(deck) || frame.near(marquee))
+    ) {
       ticking = true;
-      requestAnimationFrame(draw);
+      frame.request(read, draw);
     }
   }
   function respectMotion() {
@@ -222,7 +257,7 @@
     if (motion.matches) {
       deck.classList.remove("deck-active");
       serviceCards.forEach(function (card) {
-        card.style.removeProperty("--card-transform");
+        frame.removeStyle(card, "--card-transform");
       });
       home.classList.remove("signature-wait");
     } else {
@@ -247,10 +282,17 @@
     signatureObserver.observe(home);
   }
   window.addEventListener("scroll", queue, { passive: true });
+  [hero, deck, marquee].forEach(function (target) {
+    frame.watch(target, queue);
+  });
   window.addEventListener("resize", measure);
   window.addEventListener("load", measure);
   window.addEventListener("pageshow", measure);
+  window.addEventListener("beforeprint", function () {
+    printing = true;
+  });
   window.addEventListener("afterprint", function () {
+    printing = false;
     // Firefox can still expose print geometry inside the afterprint event.
     requestAnimationFrame(measure);
   });

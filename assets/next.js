@@ -36,6 +36,9 @@
   var resumeProgress = null;
   var printing = false;
   var pending = false;
+  var frame = window.portfolioMotion;
+  var answerGeometry = null;
+  var lastAnswerProgress = null;
   label.setAttribute("aria-hidden", "true");
   spine.setAttribute("aria-hidden", "true");
   label.append(phase, counter);
@@ -62,6 +65,7 @@
     return Math.max(0, Math.min(1, value));
   }
   function clearAnswer() {
+    lastAnswerProgress = null;
     items.forEach(function (item) {
       [
         "--next-transform",
@@ -71,7 +75,7 @@
         "--next-lock",
         "--next-checked",
       ].forEach(function (property) {
-        item.style.removeProperty(property);
+        frame.removeStyle(item, property);
       });
     });
   }
@@ -102,30 +106,55 @@
       answer.classList.remove("next-answer-measuring");
       answer.classList.toggle("next-answer-active", fits);
     }
-    if (!answer.classList.contains("next-answer-active")) clearAnswer();
+    if (!answer.classList.contains("next-answer-active")) {
+      clearAnswer();
+      answerGeometry = null;
+    } else {
+      answerGeometry = {
+        top: parseFloat(getComputedStyle(stage).top),
+        travel: Math.max(
+          1,
+          answer.getBoundingClientRect().height - stage.offsetHeight,
+        ),
+      };
+      lastAnswerProgress = null;
+    }
     queue();
   }
-  function draw() {
+  function read() {
     pending = false;
     if (motion.matches || document.hidden || printing) return;
     var viewport = innerHeight;
     var width = root.clientWidth;
     var positions = cells.map(function (cell) {
-      return cell.hidden ? null : cell.getBoundingClientRect();
+      return cell.hidden || !frame.near(cell)
+        ? null
+        : cell.getBoundingClientRect();
     });
-    var active = answer && answer.classList.contains("next-answer-active");
-    var bounds = active ? answer.getBoundingClientRect() : null;
-    var stageHeight = active ? stage.offsetHeight : 0;
-    var top = active ? parseFloat(getComputedStyle(stage).top) : 0;
+    var bounds =
+      answerGeometry && frame.near(answer)
+        ? answer.getBoundingClientRect()
+        : null;
+    return {
+      viewport: viewport,
+      width: width,
+      positions: positions,
+      answer: bounds,
+    };
+  }
+  function draw(state) {
+    var positions = state.positions;
 
     // Geometry is read from untransformed wrappers, then all transforms write.
     cards.forEach(function (card, index) {
       if (!positions[index]) return;
       var p = clamp(
-        (viewport * 0.95 - positions[index].top) / (viewport * 0.65),
+        (state.viewport * 0.95 - positions[index].top) /
+          (state.viewport * 0.65),
       );
       var q = 1 - p;
-      card.style.setProperty(
+      frame.style(
+        card,
         "--next-depth",
         "perspective(1000px) translateZ(" +
           -620 * q +
@@ -138,11 +167,13 @@
           ")",
       );
     });
-    if (!active) return;
+    if (!state.answer) return;
     var progress = clamp(
-      (top - bounds.top) / Math.max(1, bounds.height - stageHeight),
+      (answerGeometry.top - state.answer.top) / answerGeometry.travel,
     );
     answerProgress = progress;
+    if (progress === lastAnswerProgress) return;
+    lastAnswerProgress = progress;
     var assembly = assemblyEnabled
       ? clamp(progress / (checklistEnabled ? 0.42 : 0.9))
       : 1;
@@ -160,10 +191,11 @@
       var complete = fill === 1;
       if (lock === 1) locked += 1;
       if (complete) checked += 1;
-      item.style.setProperty(
+      frame.style(
+        item,
         "--next-transform",
         "translate3d(" +
-          (index % 2 ? 1 : -1) * (1 - lock) * width * 0.72 +
+          (index % 2 ? 1 : -1) * (1 - lock) * state.width * 0.72 +
           "px," +
           (1 - lock) * 60 +
           "px,0) rotate(" +
@@ -172,31 +204,47 @@
           (0.65 + 0.35 * lock) +
           ")",
       );
-      item.style.setProperty("--next-lock", lock);
-      item.style.setProperty("--next-fill", fill);
-      item.style.setProperty("--next-checked", complete ? 1 : 0);
-      item.style.setProperty(
+      frame.style(item, "--next-lock", lock);
+      frame.style(item, "--next-fill", fill);
+      frame.style(item, "--next-checked", complete ? 1 : 0);
+      frame.style(
+        item,
         "--next-color",
         complete ? "var(--paper)" : "var(--ink)",
       );
       // Paper labels keep partial ink wipes readable at any scroll stop.
-      item.style.setProperty(
+      frame.style(
+        item,
         "--next-plate",
         complete ? "transparent" : "var(--paper)",
       );
     });
     var inInk = checklistEnabled && (!assemblyEnabled || progress >= 0.5);
-    phase.textContent = inInk
-      ? (assemblyEnabled ? "02" : "01") + " / INK THE QUALITY CHECK"
-      : "01 / ASSEMBLE THE BLUEPRINT";
-    counter.textContent =
-      String(inInk ? checked : locked).padStart(2, "0") + "/08";
-    spine.style.transform = "scaleY(" + assembly + ")";
+    frame.text(
+      phase,
+      inInk
+        ? (assemblyEnabled ? "02" : "01") + " / INK THE QUALITY CHECK"
+        : "01 / ASSEMBLE THE BLUEPRINT",
+    );
+    frame.text(
+      counter,
+      String(inInk ? checked : locked).padStart(2, "0") + "/08",
+    );
+    frame.style(spine, "transform", "scaleY(" + assembly + ")");
   }
   function queue() {
-    if (!pending && !motion.matches && !document.hidden && !printing) {
+    if (
+      !pending &&
+      !motion.matches &&
+      !document.hidden &&
+      !printing &&
+      (cells.some(function (cell) {
+        return !cell.hidden && frame.near(cell);
+      }) ||
+        (answerGeometry && frame.near(answer)))
+    ) {
       pending = true;
-      requestAnimationFrame(draw);
+      frame.request(read, draw);
     }
   }
   function hashTarget(hash) {
@@ -314,13 +362,17 @@
     root.classList.toggle("next-enabled", !motion.matches);
     if (motion.matches) {
       cards.forEach(function (card) {
-        card.style.removeProperty("--next-depth");
+        frame.removeStyle(card, "--next-depth");
       });
       clearAnswer();
     }
     measure();
   }
   window.addEventListener("scroll", queue, { passive: true });
+  cells.forEach(function (cell) {
+    frame.watch(cell, queue);
+  });
+  if (answer) frame.watch(answer, queue);
   window.addEventListener("resize", measure);
   window.addEventListener("load", measure);
   window.addEventListener("pageshow", measure);

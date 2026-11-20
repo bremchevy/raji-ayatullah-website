@@ -30,6 +30,9 @@
   });
   var pending = false;
   var printing = false;
+  var frame = window.portfolioMotion;
+  var geometry = null;
+  var lastPhase = null;
 
   function clamp(value) {
     return Math.max(0, Math.min(1, value));
@@ -59,25 +62,37 @@
     }
     if (!scene.classList.contains("process-active")) {
       cards.forEach(function (card) {
-        card.style.removeProperty("--process-transform");
+        frame.removeStyle(card, "--process-transform");
       });
+      geometry = null;
+    } else {
+      // These dimensions change on resize/font/header changes, not scroll.
+      geometry = {
+        top: parseFloat(getComputedStyle(stage).top),
+        travel: Math.max(1, scene.offsetHeight - stage.offsetHeight),
+      };
     }
+    lastPhase = null;
     queue();
   }
-  function draw() {
+  function read() {
     pending = false;
     if (
       motion.matches ||
       printing ||
       document.hidden ||
-      !scene.classList.contains("process-active")
+      !geometry ||
+      (lastPhase !== null && !frame.near(scene))
     )
       return;
-    var top = parseFloat(getComputedStyle(stage).top);
-    var p = clamp(
-      (top - scene.getBoundingClientRect().top) /
-        Math.max(1, scene.offsetHeight - stage.offsetHeight),
-    );
+    return {
+      progress: clamp(
+        (geometry.top - scene.getBoundingClientRect().top) / geometry.travel,
+      ),
+    };
+  }
+  function draw(state) {
+    var p = state.progress;
     var phase =
       p < 0.18
         ? 0
@@ -88,17 +103,19 @@
             : p < 0.82
               ? 1 + (p - 0.68) / 0.14
               : 2;
+    if (phase === lastPhase) return;
+    lastPhase = phase;
     var active = Math.min(2, Math.floor(phase + 0.25));
-    number.textContent = String(active + 1).padStart(2, "0");
-    caption.textContent = [
-      "DEFINE / THE IDEA",
-      "BUILD / EVERY PHASE",
-      "DELIVER / REFINE",
-    ][active];
+    frame.text(number, String(active + 1).padStart(2, "0"));
+    frame.text(
+      caption,
+      ["DEFINE / THE IDEA", "BUILD / EVERY PHASE", "DELIVER / REFINE"][active],
+    );
     cards.forEach(function (card, index) {
       var ahead = clamp(index - phase);
       var behind = clamp(phase - index);
-      card.style.setProperty(
+      frame.style(
+        card,
         "--process-transform",
         "translate3d(0," +
           (ahead * 140 - behind * 540) +
@@ -118,13 +135,15 @@
       !document.hidden &&
       !motion.matches &&
       !printing &&
-      scene.classList.contains("process-active")
+      geometry &&
+      (lastPhase === null || frame.near(scene))
     ) {
       pending = true;
-      requestAnimationFrame(draw);
+      frame.request(read, draw);
     }
   }
   window.addEventListener("scroll", queue, { passive: true });
+  frame.watch(scene, queue);
   window.addEventListener("resize", measure);
   window.addEventListener("load", measure);
   window.addEventListener("pageshow", measure);
