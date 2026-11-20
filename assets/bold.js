@@ -8,6 +8,7 @@
   var home = document.getElementById("home");
   var deck = document.querySelector(".services");
   var serviceCards = Array.from(deck.children);
+  var deckHold = 0.65;
   var headerHeight = 68;
   var deckLength = 1;
   var ticking = false;
@@ -112,7 +113,7 @@
       });
       deck.classList.toggle("deck-active", fits);
     }
-    deckLength = (serviceCards.length - 1) * innerHeight * 0.55;
+    deckLength = (serviceCards.length - 1 + deckHold) * innerHeight * 0.8;
     deck.style.setProperty(
       "--deck-travel",
       deckLength + deckStage.clientHeight + "px",
@@ -150,9 +151,19 @@
     after.style.transform =
       "translateY(" + 110 * (1 - clamp((hp - 0.68) / 0.32, 0, 1)) + "%)";
     if (deck.classList.contains("deck-active")) {
-      var dp =
+      // Hold each complete card for most of its step, including the last card.
+      // Only the short eased interval between holds may overlap its copy.
+      var segment =
         progress(deckBounds, headerHeight + 36, deckLength) *
-        (serviceCards.length - 1);
+        (serviceCards.length - 1 + deckHold);
+      var current = Math.floor(segment);
+      var transition = clamp(
+        (segment - current - deckHold) / (1 - deckHold),
+        0,
+        1,
+      );
+      var eased = transition * transition * (3 - 2 * transition);
+      var dp = Math.min(serviceCards.length - 1, current + eased);
       serviceCards.forEach(function (card, index) {
         var incoming = Math.max(0, index - dp);
         var passed = Math.min(Math.max(0, dp - index), 4);
