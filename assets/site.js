@@ -8,7 +8,6 @@
   var result = document.getElementById("work-result");
   var empty = document.getElementById("work-empty");
   var previewVideos = Array.from(document.querySelectorAll(".project-video"));
-  var previewToggle = document.getElementById("toggle-previews");
   var previewButtons = Array.from(
     document.querySelectorAll("[data-preview-name]"),
   );
@@ -23,30 +22,23 @@
   function shouldPlayPreview(video) {
     return (
       (!previewPaused || video.dataset.userPlaying === "true") &&
-      video.dataset.userPaused !== "true" &&
       !previewsPrinting &&
       !document.hidden &&
       video.dataset.inView === "true" &&
+      video.dataset.blocked !== "true" &&
       video.dataset.failed !== "true" &&
       !video.closest("[hidden]")
     );
   }
-  function previewsEnabled() {
-    return previewVideos.some(function (video) {
-      return (
-        (!previewPaused || video.dataset.userPlaying === "true") &&
-        video.dataset.userPaused !== "true"
-      );
-    });
-  }
   function updatePreviewButton(video) {
     var button = video.previewButton;
     if (!button) return;
-    var action = video.paused ? "Play" : "Pause";
-    button.textContent = action + " preview";
-    button.setAttribute(
-      "aria-label",
-      action + " " + button.dataset.previewName + " hero preview",
+    // No controls cover a playing loop. Only offer Play when browser policy,
+    // a motion/data preference, or a failed transfer requires a direct tap.
+    button.hidden = !(
+      video.dataset.blocked === "true" ||
+      video.dataset.failed === "true" ||
+      (video.paused && (previewPaused || !("IntersectionObserver" in window)))
     );
   }
   function syncPreviews() {
@@ -65,31 +57,24 @@
         playback.catch(function (error) {
           // Offer an explicit retry when the browser blocks muted autoplay.
           if (error.name === "NotAllowedError") {
-            video.dataset.userPlaying = "false";
-            video.dataset.userPaused = "true";
-            syncPreviews();
+            video.dataset.blocked = "true";
+            updatePreviewButton(video);
           }
         });
       updatePreviewButton(video);
     });
-    previewToggle.textContent = previewsEnabled()
-      ? "Pause previews"
-      : "Play previews";
   }
   previewButtons.forEach(function (button) {
     var video = document.getElementById(button.getAttribute("aria-controls"));
     video.previewButton = button;
-    button.hidden = false;
+    updatePreviewButton(video);
     button.addEventListener("click", function () {
-      var play = video.paused;
-      video.dataset.userPlaying = String(play);
-      video.dataset.userPaused = String(!play);
-      if (play) {
-        video.dataset.inView = "true";
-        if (video.error) {
-          delete video.dataset.failed;
-          video.load();
-        }
+      video.dataset.userPlaying = "true";
+      video.dataset.inView = "true";
+      delete video.dataset.blocked;
+      if (video.error || video.dataset.failed === "true") {
+        delete video.dataset.failed;
+        video.load();
       }
       // Call play synchronously from this tap, as iPhone Safari requires
       // when its autoplay policy blocks automatic playback.
@@ -99,6 +84,7 @@
   previewVideos.forEach(function (video) {
     video.muted = true;
     video.addEventListener("playing", function () {
+      delete video.dataset.blocked;
       if (!shouldPlayPreview(video)) video.pause();
       updatePreviewButton(video);
     });
@@ -127,29 +113,14 @@
       previewObserver.observe(video);
     });
   }
-  previewToggle.hidden = !previewObserver;
-  previewToggle.addEventListener("click", function () {
-    previewPaused = previewsEnabled();
-    previewVideos.forEach(function (video) {
-      delete video.dataset.userPlaying;
-      delete video.dataset.userPaused;
-      if (!previewPaused && video.error) {
-        delete video.dataset.failed;
-        video.load();
-      }
-    });
-    syncPreviews();
-  });
   document.addEventListener("visibilitychange", syncPreviews);
   function respectPreviewPreferences() {
-    if (
+    previewPaused =
       previewMotion.matches ||
-      (previewConnection && previewConnection.saveData)
-    ) {
-      previewPaused = true;
+      Boolean(previewConnection && previewConnection.saveData);
+    if (previewPaused) {
       previewVideos.forEach(function (video) {
         delete video.dataset.userPlaying;
-        delete video.dataset.userPaused;
         video.classList.add("poster-only");
       });
     }

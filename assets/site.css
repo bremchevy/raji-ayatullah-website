@@ -522,16 +522,6 @@ img {
 .filter:hover {
   border-color: var(--line);
 }
-.preview-toggle {
-  min-height: 44px;
-  padding: 9px 13px;
-  border: 1px solid var(--line);
-  background: transparent;
-  font: 11px/1.5 var(--mono);
-}
-.preview-toggle:hover {
-  border-color: var(--blue);
-}
 .work-search input {
   width: 210px;
   max-width: 100%;
@@ -628,7 +618,7 @@ img {
 .project-video.poster-only {
   visibility: hidden;
 }
-.project-preview-toggle {
+.project-preview-play {
   position: absolute;
   right: 29px;
   bottom: 29px;
@@ -640,10 +630,10 @@ img {
   color: white;
   font: 11px/1.5 var(--mono);
 }
-.project-preview-toggle:hover {
+.project-preview-play:hover {
   background: #194cc5;
 }
-.project-preview-toggle:focus-visible {
+.project-preview-play:focus-visible {
   outline: 2px solid white;
   outline-offset: 3px;
 }
