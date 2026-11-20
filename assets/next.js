@@ -2,9 +2,14 @@
   "use strict";
 
   var root = document.documentElement;
+  var modes = (root.dataset.nextDemo || "").split(/\s+/);
+  var assemblyEnabled = modes.includes("answer-assembly");
+  var checklistEnabled = modes.includes("answer-checklist");
+  if (!modes.includes("work-depth") && !assemblyEnabled && !checklistEnabled)
+    return;
   var motion = matchMedia("(prefers-reduced-motion: reduce)");
   var work = document.getElementById("work-grid");
-  var cards = Array.from(work.children);
+  var cards = modes.includes("work-depth") ? Array.from(work.children) : [];
   var cells = cards.map(function (card) {
     var cell = element("div", "next-depth-cell");
     if (card.classList.contains("featured-project"))
@@ -14,9 +19,10 @@
     return cell;
   });
   var rubric = document.getElementById("criteria");
-  var items = Array.from(rubric.children);
+  var items =
+    assemblyEnabled || checklistEnabled ? Array.from(rubric.children) : [];
   var heading = document.querySelector(".framework-heading");
-  var answer = element("div", "next-answer");
+  var answer = items.length ? element("div", "next-answer") : null;
   var stage = element("div", "next-answer-stage");
   var label = element("div", "next-label");
   var phase = element("span", "", "01 / ASSEMBLE THE BLUEPRINT");
@@ -30,15 +36,18 @@
   label.setAttribute("aria-hidden", "true");
   spine.setAttribute("aria-hidden", "true");
   label.append(phase, counter);
-  heading.before(answer);
-  answer.append(stage);
-  stage.append(label, heading, rubric);
-  rubric.append(spine);
-  items.forEach(function (item) {
-    var tick = element("span", "next-tick", "✓");
-    tick.setAttribute("aria-hidden", "true");
-    item.querySelector(".criterion-title").before(tick);
-  });
+  if (answer) {
+    heading.before(answer);
+    answer.append(stage);
+    stage.append(label, heading, rubric);
+    rubric.append(spine);
+  }
+  if (checklistEnabled)
+    items.forEach(function (item) {
+      var tick = element("span", "next-tick", "✓");
+      tick.setAttribute("aria-hidden", "true");
+      item.querySelector(".criterion-title").before(tick);
+    });
 
   function element(tag, className, text) {
     var node = document.createElement(tag);
@@ -67,6 +76,10 @@
     cells.forEach(function (cell, index) {
       cell.hidden = cards[index].hidden;
     });
+    if (!answer) {
+      queue();
+      return;
+    }
     if (motion.matches || printing || reading) {
       answer.classList.remove("next-answer-active");
     } else {
@@ -97,7 +110,7 @@
     var positions = cells.map(function (cell) {
       return cell.hidden ? null : cell.getBoundingClientRect();
     });
-    var active = answer.classList.contains("next-answer-active");
+    var active = answer && answer.classList.contains("next-answer-active");
     var bounds = active ? answer.getBoundingClientRect() : null;
     var stageHeight = active ? stage.offsetHeight : 0;
     var top = active ? parseFloat(getComputedStyle(stage).top) : 0;
@@ -126,8 +139,15 @@
     var progress = clamp(
       (top - bounds.top) / Math.max(1, bounds.height - stageHeight),
     );
-    var assembly = clamp(progress / 0.42);
-    var ink = clamp((progress - 0.5) / 0.4);
+    var assembly = assemblyEnabled
+      ? clamp(progress / (checklistEnabled ? 0.42 : 0.9))
+      : 1;
+    var ink = checklistEnabled
+      ? clamp(
+          (progress - (assemblyEnabled ? 0.5 : 0)) /
+            (assemblyEnabled ? 0.4 : 0.9),
+        )
+      : 0;
     var locked = 0;
     var checked = 0;
     items.forEach(function (item, index) {
@@ -161,9 +181,9 @@
         complete ? "transparent" : "var(--paper)",
       );
     });
-    var inInk = progress >= 0.5;
+    var inInk = checklistEnabled && (!assemblyEnabled || progress >= 0.5);
     phase.textContent = inInk
-      ? "02 / INK THE QUALITY CHECK"
+      ? (assemblyEnabled ? "02" : "01") + " / INK THE QUALITY CHECK"
       : "01 / ASSEMBLE THE BLUEPRINT";
     counter.textContent =
       String(inInk ? checked : locked).padStart(2, "0") + "/08";
@@ -187,20 +207,22 @@
         .scrollIntoView({ behavior: "instant", block: "nearest" });
     });
   }
-  rubric.addEventListener(
-    "toggle",
-    function (event) {
-      if (event.target.open) enterReading(event.target);
-      queue();
-    },
-    true,
-  );
-  rubric.addEventListener("focusin", function (event) {
-    if (event.target.matches(":focus-visible")) {
-      var item = event.target.closest(".criterion");
-      if (item) enterReading(item);
-    }
-  });
+  if (answer)
+    rubric.addEventListener(
+      "toggle",
+      function (event) {
+        if (event.target.open) enterReading(event.target);
+        queue();
+      },
+      true,
+    );
+  if (answer)
+    rubric.addEventListener("focusin", function (event) {
+      if (event.target.matches(":focus-visible")) {
+        var item = event.target.closest(".criterion");
+        if (item) enterReading(item);
+      }
+    });
   function respectMotion() {
     root.classList.toggle("next-enabled", !motion.matches);
     if (motion.matches) {
