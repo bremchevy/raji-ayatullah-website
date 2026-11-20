@@ -512,9 +512,12 @@ b {
 }
 .gw-intro {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 72px;
   align-items: center;
+}
+.gw-intro > * {
+  min-width: 0;
 }
 .gw-copy .eyebrow {
   display: flex;
@@ -4210,6 +4213,17 @@ summary:focus-visible {
   color: var(--muted);
   margin-top: 28px;
   padding: 7px 0;
+}
+.paper-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 18px;
+  font: 10px/1.5 var(--mono);
+}
+.paper-index a {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
 }
 .paper-stack {
   min-width: 0;
