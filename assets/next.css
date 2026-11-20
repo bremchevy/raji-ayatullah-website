@@ -147,6 +147,10 @@
   }
 }
 @media print {
+  /* Work filters must not remove projects from the full printed record. */
+  #work-grid .next-depth-cell > article[hidden] {
+    display: block !important;
+  }
   .next-answer,
   .next-answer-stage,
   .next-depth-cell {
