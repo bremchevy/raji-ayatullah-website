@@ -280,12 +280,25 @@
       });
   }
 
-  /* Native scroll does the stacking; only the paper's tiny tuck is scrubbed. */
-  (function initPaperStudy() {
-    var study = document.querySelector(".paper-study");
-    if (!study) return;
-    var stack = study.querySelector(".paper-stack"),
-      leaves = Array.from(stack.children),
+  /* One event-driven update for the Gateway stack and every project notebook. */
+  (function initScrollWork() {
+    var study = document.querySelector(".paper-study"),
+      stack = study && study.querySelector(".paper-stack"),
+      leaves = stack ? Array.from(stack.children) : [],
+      galleries = Array.from(
+        document.querySelectorAll("[data-scroll-gallery]"),
+      ),
+      photos = galleries.flatMap(function (gallery) {
+        return Array.from(gallery.querySelectorAll(".project-shot")).map(
+          function (photo) {
+            return {
+              photo: photo,
+              card: photo.parentElement,
+              view: gallery.closest('[id^="view-"]'),
+            };
+          },
+        );
+      }),
       motion = window.matchMedia(
         "(min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)",
       ),
@@ -294,35 +307,61 @@
     function update() {
       frame = 0;
       var enabled = motion.matches;
-      study.classList.toggle("is-scroll-ready", enabled);
+      if (study) study.classList.toggle("is-scroll-ready", enabled);
+      galleries.forEach(function (gallery) {
+        gallery.classList.toggle("is-scroll-ready", enabled);
+      });
       if (!enabled) {
         leaves.forEach(function (leaf) {
           leaf.style.removeProperty("--paper-tuck");
         });
+        photos.forEach(function (item) {
+          item.photo.style.removeProperty("--photo-travel");
+        });
         return;
       }
-      if (views.gateway.hidden || document.hidden) return;
+      if (document.hidden) return;
+      // Read stationary card bounds, never the photograph's transformed bounds.
+      var photoMeasures = photos
+        .filter(function (item) {
+          return !item.view.hidden && !item.card.hidden;
+        })
+        .map(function (item) {
+          var rect = item.card.getBoundingClientRect();
+          return {
+            photo: item.photo,
+            travel: Math.max(
+              -1,
+              Math.min(
+                1,
+                (rect.top + rect.height / 2 - window.innerHeight * 0.55) /
+                  (window.innerHeight * 0.65),
+              ),
+            ),
+          };
+        });
       // Read the natural flow positions, not the moving sticky rectangles.
-      var top = stack.getBoundingClientRect().top;
-      var measures = leaves.map(function (leaf) {
+      var top =
+        stack && !views.gateway.hidden ? stack.getBoundingClientRect().top : 0;
+      var measures = (views.gateway.hidden ? [] : leaves).map(function (leaf) {
         var height = leaf.offsetHeight;
         var position = top;
         top += height + parseFloat(getComputedStyle(leaf).marginBottom);
         return { top: position, height: height };
       });
-      leaves.forEach(function (leaf, index) {
+      // All geometry is read before writing any animation values.
+      measures.forEach(function (measure, index) {
         var next = measures[index + 1];
         var tuck = next
           ? Math.max(
               0,
-              Math.min(
-                1,
-                (80 + measures[index].height - next.top) /
-                  measures[index].height,
-              ),
+              Math.min(1, (80 + measure.height - next.top) / measure.height),
             )
           : 0;
-        leaf.style.setProperty("--paper-tuck", tuck.toFixed(4));
+        leaves[index].style.setProperty("--paper-tuck", tuck.toFixed(4));
+      });
+      photoMeasures.forEach(function (item) {
+        item.photo.style.setProperty("--photo-travel", item.travel.toFixed(4));
       });
     }
     function queue() {
@@ -337,7 +376,21 @@
       attributes: true,
       attributeFilter: ["data-view"],
     });
-    if ("ResizeObserver" in window) new ResizeObserver(queue).observe(stack);
+    galleries.forEach(function (gallery) {
+      // Filtering must resync the remaining photos, even at the same scroll Y.
+      new MutationObserver(queue).observe(gallery, {
+        attributes: true,
+        attributeFilter: ["hidden"],
+        subtree: true,
+      });
+    });
+    if ("ResizeObserver" in window) {
+      var resize = new ResizeObserver(queue);
+      if (stack) resize.observe(stack);
+      galleries.forEach(function (gallery) {
+        resize.observe(gallery);
+      });
+    }
     update();
   })();
 
