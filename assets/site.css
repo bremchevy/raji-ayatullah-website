@@ -1268,6 +1268,12 @@ img {
   }
 }
 @media print {
+  #work-grid > article[hidden] {
+    display: block !important;
+  }
+  #work-empty {
+    display: none !important;
+  }
   html {
     scroll-behavior: auto;
   }
