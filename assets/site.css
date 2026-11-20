@@ -229,9 +229,15 @@ img {
 }
 .signature-rail {
   stroke-width: 1.05;
+  vector-effect: non-scaling-stroke;
 }
 .signature-cross {
   stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+}
+.signature-dot {
+  stroke-width: 9;
+  vector-effect: none;
 }
 @media (prefers-reduced-motion: no-preference) {
   .signature-rail {
@@ -1063,7 +1069,7 @@ img {
     margin-top: 38px;
   }
   .signature-svg {
-    width: 180%;
+    width: 128%;
   }
   .signature-wrap {
     margin-top: -2px;
