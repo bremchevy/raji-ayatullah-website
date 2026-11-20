@@ -9,6 +9,9 @@
   var empty = document.getElementById("work-empty");
   var previewVideos = Array.from(document.querySelectorAll(".project-video"));
   var previewToggle = document.getElementById("toggle-previews");
+  var previewButtons = Array.from(
+    document.querySelectorAll("[data-preview-name]"),
+  );
   var previewMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var previewConnection = navigator.connection;
   var previewPaused =
@@ -19,7 +22,8 @@
 
   function shouldPlayPreview(video) {
     return (
-      !previewPaused &&
+      (!previewPaused || video.dataset.userPlaying === "true") &&
+      video.dataset.userPaused !== "true" &&
       !previewsPrinting &&
       !document.hidden &&
       video.dataset.inView === "true" &&
@@ -27,37 +31,84 @@
       !video.closest("[hidden]")
     );
   }
+  function previewsEnabled() {
+    return previewVideos.some(function (video) {
+      return (
+        (!previewPaused || video.dataset.userPlaying === "true") &&
+        video.dataset.userPaused !== "true"
+      );
+    });
+  }
+  function updatePreviewButton(video) {
+    var button = video.previewButton;
+    if (!button) return;
+    var action = video.paused ? "Play" : "Pause";
+    button.textContent = action + " preview";
+    button.setAttribute(
+      "aria-label",
+      action + " " + button.dataset.previewName + " hero preview",
+    );
+  }
   function syncPreviews() {
     previewVideos.forEach(function (video) {
       if (!shouldPlayPreview(video)) {
         video.pause();
+        updatePreviewButton(video);
         return;
       }
       // Keep video bytes off the initial page load and out of hidden cards.
       if (!video.getAttribute("src")) video.src = video.dataset.src;
+      video.classList.remove("poster-only");
+      video.muted = true;
       var playback = video.play();
       if (playback)
         playback.catch(function (error) {
           // Offer an explicit retry when the browser blocks muted autoplay.
           if (error.name === "NotAllowedError") {
-            previewPaused = true;
+            video.dataset.userPlaying = "false";
+            video.dataset.userPaused = "true";
             syncPreviews();
           }
         });
+      updatePreviewButton(video);
     });
-    previewToggle.textContent = previewPaused
-      ? "Play previews"
-      : "Pause previews";
+    previewToggle.textContent = previewsEnabled()
+      ? "Pause previews"
+      : "Play previews";
   }
+  previewButtons.forEach(function (button) {
+    var video = document.getElementById(button.getAttribute("aria-controls"));
+    video.previewButton = button;
+    button.hidden = false;
+    button.addEventListener("click", function () {
+      var play = video.paused;
+      video.dataset.userPlaying = String(play);
+      video.dataset.userPaused = String(!play);
+      if (play) {
+        video.dataset.inView = "true";
+        if (video.error) {
+          delete video.dataset.failed;
+          video.load();
+        }
+      }
+      // Call play synchronously from this tap, as iPhone Safari requires
+      // when its autoplay policy blocks automatic playback.
+      syncPreviews();
+    });
+  });
   previewVideos.forEach(function (video) {
     video.muted = true;
     video.addEventListener("playing", function () {
-      if (shouldPlayPreview(video)) video.classList.add("has-frame");
-      else video.pause();
+      if (!shouldPlayPreview(video)) video.pause();
+      updatePreviewButton(video);
+    });
+    video.addEventListener("pause", function () {
+      updatePreviewButton(video);
     });
     video.addEventListener("error", function () {
       video.dataset.failed = "true";
-      video.classList.remove("has-frame");
+      video.classList.add("poster-only");
+      updatePreviewButton(video);
     });
   });
   if ("IntersectionObserver" in window) {
@@ -78,7 +129,15 @@
   }
   previewToggle.hidden = !previewObserver;
   previewToggle.addEventListener("click", function () {
-    previewPaused = !previewPaused;
+    previewPaused = previewsEnabled();
+    previewVideos.forEach(function (video) {
+      delete video.dataset.userPlaying;
+      delete video.dataset.userPaused;
+      if (!previewPaused && video.error) {
+        delete video.dataset.failed;
+        video.load();
+      }
+    });
     syncPreviews();
   });
   document.addEventListener("visibilitychange", syncPreviews);
@@ -89,7 +148,9 @@
     ) {
       previewPaused = true;
       previewVideos.forEach(function (video) {
-        video.classList.remove("has-frame");
+        delete video.dataset.userPlaying;
+        delete video.dataset.userPaused;
+        video.classList.add("poster-only");
       });
     }
     syncPreviews();
