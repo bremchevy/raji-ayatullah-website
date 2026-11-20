@@ -31,6 +31,7 @@
   var reading = items.some(function (item) {
     return item.open;
   });
+  var keyboardReading = false;
   var printing = false;
   var pending = false;
   label.setAttribute("aria-hidden", "true");
@@ -195,34 +196,81 @@
       requestAnimationFrame(draw);
     }
   }
-  function enterReading(item) {
-    if (reading || motion.matches || printing) return;
-    reading = true;
+  function hashTarget(hash) {
+    var key;
+    try {
+      key = decodeURIComponent(hash.slice(1));
+    } catch (_) {
+      return null;
+    }
+    if (key === "rubric" || key === "eval-rubric") key = "criteria";
+    return document.getElementById(key);
+  }
+  function linkedCriterion(target) {
+    return target && (target === rubric || rubric.contains(target));
+  }
+  function updateReading(item) {
+    if (!answer || printing) return;
+    var wasReading = reading;
+    reading =
+      keyboardReading ||
+      items.some(function (criterion) {
+        return criterion.open;
+      }) ||
+      Boolean(linkedCriterion(hashTarget(location.hash)));
     measure();
     // Native disclosures remain the reading interface. Do not re-pin a closed
-    // panel beneath the reader or strand keyboard focus outside the stage.
-    requestAnimationFrame(function () {
-      item
-        .querySelector("summary")
-        .scrollIntoView({ behavior: "instant", block: "nearest" });
-    });
+    // panel until keyboard focus leaves it. Pointer close restores the scene.
+    if (reading && !wasReading && item) {
+      requestAnimationFrame(function () {
+        item.querySelector("summary").scrollIntoView({
+          behavior: "instant",
+          block: "nearest",
+        });
+      });
+    }
+  }
+  function revealAnswerHash() {
+    if (!answer || printing) return;
+    var wasReading = reading;
+    var target = hashTarget(location.hash);
+    updateReading();
+    // Fragment jumps bypass the decorative assembly. Reposition other native
+    // targets too if restoring the scene changed the page's height above them.
+    if (target && (linkedCriterion(target) || wasReading !== reading)) {
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ behavior: "instant", block: "start" });
+      });
+    }
   }
   if (answer)
     rubric.addEventListener(
       "toggle",
       function (event) {
-        if (event.target.open) enterReading(event.target);
-        queue();
+        updateReading(event.target.open ? event.target : null);
       },
       true,
     );
   if (answer)
     rubric.addEventListener("focusin", function (event) {
-      if (event.target.matches(":focus-visible")) {
-        var item = event.target.closest(".criterion");
-        if (item) enterReading(item);
+      keyboardReading = event.target.matches(":focus-visible");
+      updateReading(event.target.closest(".criterion"));
+    });
+  if (answer) {
+    rubric.addEventListener("focusout", function (event) {
+      if (!rubric.contains(event.relatedTarget)) {
+        keyboardReading = false;
+        updateReading();
       }
     });
+    window.addEventListener("hashchange", revealAnswerHash);
+    window.addEventListener("load", revealAnswerHash);
+    window.addEventListener("pageshow", revealAnswerHash);
+    document.addEventListener("click", function (event) {
+      var link = event.target.closest("a[href^='#']");
+      if (link && link.hash === location.hash) revealAnswerHash();
+    });
+  }
   function respectMotion() {
     root.classList.toggle("next-enabled", !motion.matches);
     if (motion.matches) {
@@ -242,7 +290,10 @@
   });
   window.addEventListener("afterprint", function () {
     printing = false;
-    requestAnimationFrame(measure);
+    requestAnimationFrame(function () {
+      updateReading();
+      measure();
+    });
   });
   document.addEventListener("visibilitychange", queue);
   if ("MutationObserver" in window) {
@@ -258,4 +309,5 @@
   if (document.fonts) document.fonts.ready.then(measure);
   motion.addEventListener("change", respectMotion);
   respectMotion();
+  revealAnswerHash();
 })();
