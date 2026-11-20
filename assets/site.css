@@ -4440,7 +4440,7 @@ summary:focus-visible {
   border-radius: 1px;
   box-shadow: 0 5px 14px -8px #282c3850;
   transform: rotate(-4deg);
-  object-fit: cover;
+  object-fit: contain;
 }
 .gh-avatar img {
   width: 86px;
@@ -4506,6 +4506,11 @@ summary:focus-visible {
   }
 }
 @media (max-width: 560px) {
+  .free-portrait img {
+    width: 48px;
+    height: 56px;
+    padding: 3px 3px 9px;
+  }
   .work-note {
     padding: 20px;
     margin-block: 25px;
